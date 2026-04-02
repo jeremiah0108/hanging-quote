@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한송 씽크대 견적 시스템 v3 (클라우드)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','맑은 고딕',sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px}
+.header{background:#1a1a1a;color:#fff;padding:13px 20px;display:flex;align-items:center;gap:12px}
+.header h1{font-size:15px;font-weight:500;letter-spacing:.02em}
+.ver{font-size:10px;background:#333;padding:2px 8px;border-radius:10px;color:#aaa}
+.header-date{font-size:11px;color:#888;margin-left:auto}
+.tab-nav{display:none;background:#fff;border-bottom:1px solid #ebebea;padding:0 14px}
+.tab-nav button{padding:11px 18px;border:none;background:transparent;font-size:13px;cursor:pointer;color:#aaa;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab-nav button.on{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
+
+
+.wrap{display:grid;grid-template-columns:1fr 400px;min-height:calc(100vh - 46px);min-width:0}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}
+.left{display:none}
+.right{display:none}
+.left.active{display:block}
+.right.active{display:block}
+.tab-nav{display:flex !important}}
+
+/* LEFT */
+.left{padding:14px;background:#fff;border-right:1px solid #ebebea;overflow-y:auto}
+.right{padding:14px;background:#f8f8f6;overflow-y:auto}
+
+.lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:7px;margin-top:14px}
+.lbl:first-child{margin-top:0}
+
+/* Material buttons */
+.mat-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.mat-btn{padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:11px;cursor:pointer;background:#fff;color:#999;transition:all .15s;white-space:nowrap;font-family:inherit}
+.mat-btn:hover{border-color:#aaa;color:#333}
+.mat-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+.cat-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.cat-btn{padding:4px 10px;border-radius:20px;border:1px solid #eee;font-size:11px;cursor:pointer;background:#fff;color:#999;font-family:inherit;transition:all .15s}
+.cat-btn:hover{background:#f5f5f3}
+.cat-btn.on{background:#f0f0ee;color:#1a1a1a;border-color:#ccc}
+
+.srch{width:100%;padding:8px 12px;border:1px solid #e5e5e3;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;font-family:inherit;margin-bottom:8px}
+.srch:focus{outline:none;border-color:#aaa}
+
+.item-list{max-height:210px;overflow-y:auto;border:1px solid #ebebea;border-radius:8px;margin-bottom:12px;background:#fff}
+.item-row{display:flex;align-items:center;padding:7px 11px;border-bottom:1px solid #f5f5f3;cursor:pointer;gap:8px;transition:background .1s}
+.item-row:last-child{border-bottom:none}
+.item-row:hover{background:#f8f8f6}
+.item-name{flex:1;font-size:12px;color:#1a1a1a;line-height:1.3}
+.item-size{font-size:10px;color:#aaa;min-width:82px}
+.item-factory{font-size:10px;color:#bbb;min-width:58px;text-align:right}
+.item-sell{font-size:12px;font-weight:600;color:#1a1a1a;min-width:68px;text-align:right}
+.add-btn{width:23px;height:23px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;color:#aaa;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s}
+.add-btn:hover{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+.divider{height:1px;background:#f0f0ee;margin:12px 0}
+
+/* Custom input */
+.custom-row{display:flex;gap:6px;margin-bottom:12px;align-items:stretch}
+.inp{padding:7px 10px;border:1px solid #e5e5e3;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;font-family:inherit;width:100%}
+.inp:focus{outline:none;border-color:#aaa}
+textarea.inp{resize:vertical;min-height:44px;font-size:12px}
+.btn-add{padding:7px 12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s}
+.btn-add:hover{background:#333}
+
+/* Cart */
+.cart-area{min-height:80px}
+.cart-row{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid #f5f5f3}
+.cr-name{flex:1;font-size:11px;color:#1a1a1a;line-height:1.4}
+.cr-mat{font-size:10px;color:#bbb;margin-top:1px}
+.cr-margin{font-size:10px;color:#e67e22;white-space:nowrap}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qb{width:21px;height:21px;border:1px solid #e0e0de;border-radius:4px;background:#fff;cursor:pointer;color:#333;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.qb:hover{background:#f0f0ee}
+.qn{width:22px;text-align:center;font-size:12px;font-weight:500}
+.cr-amt{min-width:74px;text-align:right;font-size:11px;color:#555}
+.cr-del{width:18px;height:18px;border:none;background:transparent;cursor:pointer;color:#ccc;font-size:16px;display:flex;align-items:center;justify-content:center}
+.cr-del:hover{color:#e44}
+.empty-cart{padding:20px;text-align:center;color:#ccc;font-size:12px;border:1px dashed #e5e5e3;border-radius:8px}
+.badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;background:#f0f0ee;color:#999;margin-left:6px;vertical-align:middle}
+
+/* RIGHT panels */
+.panel{background:#fff;border:1px solid #ebebea;border-radius:10px;padding:13px;margin-bottom:10px}
+
+.cust-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.saved-custs{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 2px}
+.sc-btn{padding:3px 9px;border-radius:20px;border:1px solid #e5e5e3;font-size:10px;cursor:pointer;background:#fff;color:#999;font-family:inherit}
+.sc-btn:hover{background:#f5f5f3;color:#333}
+
+/* Margin section */
+.margin-tabs{display:flex;gap:5px;margin-bottom:10px}
+.mtab{flex:1;padding:6px;border:1px solid #e5e5e3;border-radius:7px;font-size:11px;cursor:pointer;background:#fff;color:#999;text-align:center;font-family:inherit;transition:all .15s}
+.mtab.on{background:#fff8f0;border-color:#e67e22;color:#e67e22;font-weight:500}
+
+.margin-global{display:flex;align-items:center;gap:8px;font-size:12px}
+.margin-global .c-lbl{color:#888;white-space:nowrap}
+.margin-input{width:65px;padding:6px 8px;border:1px solid #e5e5e3;border-radius:7px;font-size:12px;background:#fff;color:#1a1a1a;font-family:inherit;text-align:center}
+.margin-input::-webkit-inner-spin-button,.margin-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.margin-input:focus{outline:none;border-color:#e67e22}
+.margin-preview{margin-left:auto;font-size:12px;color:#e67e22;font-weight:500}
+
+.margin-item-hint{font-size:11px;color:#aaa;padding:8px;background:#f8f8f6;border-radius:7px;line-height:1.6}
+
+/* Cost section */
+.cost-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.cost-item{display:flex;flex-direction:column;gap:3px}
+.cost-lbl{font-size:10px;color:#999}
+.cost-row-inner{display:flex;align-items:center;gap:4px}
+.cost-inp{flex:1;padding:6px 8px;border:1px solid #e5e5e3;border-radius:7px;font-size:12px;background:#fff;color:#1a1a1a;font-family:inherit;text-align:right}
+.cost-inp::-webkit-inner-spin-button,.cost-inp::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.cost-inp[type=number]{-moz-appearance:textfield}
+.cost-inp:focus{outline:none;border-color:#aaa}
+.cost-unit{font-size:11px;color:#aaa;white-space:nowrap}
+
+.sigan-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:4px}
+.sigan-row .c-lbl{color:#888;white-space:nowrap}
+.sigan-val{font-weight:500;color:#1a1a1a}
+
+/* Calc box */
+.calc-box{background:#fff;border:1px solid #ebebea;border-radius:10px;padding:13px;margin-bottom:10px}
+.c-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:7px}
+.c-row:last-child{margin-bottom:0}
+.c-lbl{color:#888}
+.c-val{font-weight:500;color:#1a1a1a}
+.c-val.orange{color:#e67e22}
+.c-val.blue{color:#2980b9}
+.disc-row{display:flex;gap:6px;align-items:center;margin-bottom:7px}
+.vat-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;color:#888}
+.tog{width:34px;height:18px;border-radius:9px;background:#ccc;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:#1a1a1a}
+.tog::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.on::after{left:18px}
+.sep{height:1px;background:#f0f0ee;margin:8px 0}
+.total-row{display:flex;justify-content:space-between;font-size:17px;font-weight:700;padding-top:10px;border-top:1px solid #e8e8e6;margin-top:8px}
+
+/* Buttons */
+.btn-row{display:flex;gap:7px;margin-bottom:8px}
+.btn-p{flex:1;padding:11px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;font-family:inherit;transition:background .15s}
+.btn-p:hover{background:#333}
+.btn-s{padding:11px 14px;background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-s:hover{background:#f5f5f3}
+.btn-ghost{width:100%;padding:9px;background:#fff;border:1px solid #e5e5e3;border-radius:8px;font-size:12px;cursor:pointer;color:#999;font-family:inherit;transition:all .15s}
+.btn-ghost:hover{background:#f5f5f3;color:#333}
+.btn-reset{padding:6px 11px;background:transparent;border:1px solid #eee;border-radius:7px;font-size:11px;cursor:pointer;color:#ccc;font-family:inherit}
+.btn-reset:hover{border-color:#e44;color:#e44}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-hd span{font-size:15px;font-weight:600}
+.modal-x{background:transparent;border:none;font-size:22px;cursor:pointer;color:#ccc;line-height:1}
+.modal-x:hover{color:#333}
+
+/* Quote preview */
+.qhd{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #ebebea}
+.qhd-title{font-size:20px;font-weight:700;letter-spacing:.1em;margin-bottom:4px}
+.qhd-sub{font-size:11px;color:#aaa}
+.qsec{margin-bottom:14px}
+.qsec-lbl{font-size:10px;font-weight:600;color:#aaa;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.qinfo{font-size:12px;line-height:2;color:#333;background:#f8f8f6;padding:8px 10px;border-radius:7px}
+.qtbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px}
+.qtbl th{text-align:left;padding:6px 8px;background:#f8f8f6;font-weight:600;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em}
+.qtbl td{padding:7px 8px;border-bottom:1px solid #f5f5f3;color:#333}
+.qtbl tr:last-child td{border-bottom:none}
+.qtot{background:#f8f8f6;border-radius:8px;padding:13px}
+.qtot-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:#555}
+.qtot-row.indent{padding-left:12px;color:#aaa;font-size:11px}
+.qtot-sep{height:1px;background:#e8e8e6;margin:8px 0}
+.qtot-final{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding-top:8px}
+.copy-btn{width:100%;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-top:12px;font-family:inherit;font-weight:500;transition:background .15s}
+.copy-btn:hover{background:#333}
+
+/* History */
+.hist-item{padding:11px 13px;border:1px solid #ebebea;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;background:#fff}
+.hist-item:hover{border-color:#aaa}
+.hi-top{display:flex;justify-content:space-between;align-items:center}
+.hi-name{font-size:13px;font-weight:500}
+.hi-price{font-size:13px;font-weight:600}
+.hi-meta{font-size:11px;color:#aaa;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>한송 씽크대 견적 시스템</h1>
+  <span class="ver">v3.1 ☁️</span>
+  <div class="header-date" id="todayDate"></div>
+</div>
+
+
+<div class="tab-nav" id="tabNav">
+  <button class="on" onclick="switchTab('left')">품목 선택</button>
+  <button onclick="switchTab('right')">견적 설정</button>
+</div>
+<div class="wrap">
+<!-- ===== LEFT ===== -->
+<div class="left active" id="panelLeft">
+  <div class="lbl">마감재 선택</div>
+  <div class="mat-row" id="matRow"></div>
+
+  <div class="lbl">카테고리</div>
+  <div class="cat-row" id="catRow"></div>
+
+  <input class="srch" id="srch" placeholder="품목명·코드·규격 검색 (예: 600, 하부장, W6068)..." oninput="renderItems()"/>
+  <div class="item-list" id="itemList"></div>
+
+  <div class="divider"></div>
+  <div class="lbl">직접 입력</div>
+  <div class="custom-row">
+    <input class="inp" id="cName" placeholder="품목명" style="flex:2"/>
+    <input class="inp" id="cPrice" placeholder="공장도 단가" type="number" style="width:110px"/>
+    <input class="inp" id="cQty" placeholder="수량" type="number" value="1" style="width:58px"/>
+    <button class="btn-add" onclick="addCustom()">추가</button>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+    <div class="lbl" style="margin:0">견적 항목 <span class="badge" id="cartBadge">0</span></div>
+    <button class="btn-reset" onclick="resetCart()">전체 삭제</button>
+  </div>
+  <div class="cart-area" id="cartArea">
+    <div class="empty-cart">품목을 선택하거나 직접 입력하세요</div>
+  </div>
+</div>
+
+<!-- ===== RIGHT ===== -->
+<div class="right active" id="panelRight">
+
+  <!-- 고객 정보 -->
+  <div class="panel">
+    <div class="lbl" style="margin-top:0">고객 정보</div>
+    <div class="cust-grid">
+      <input class="inp" id="cCust" placeholder="고객명"/>
+      <input class="inp" id="cPhone" placeholder="연락처"/>
+      <input class="inp" id="cAddr" placeholder="설치 주소" style="grid-column:span 2"/>
+    </div>
+    <textarea class="inp" id="cNote" placeholder="특이사항 / 메모" style="width:100%;margin-bottom:0"></textarea>
+    <div class="saved-custs" id="savedCusts"></div>
+  </div>
+
+  <!-- 마진율 -->
+  <div class="panel">
+    <div class="lbl" style="margin-top:0">마진율 설정</div>
+    <div class="margin-tabs">
+      <button class="mtab on" id="mtab-global" onclick="setMarginMode('global')">전체 일괄 적용</button>
+      <button class="mtab" id="mtab-item" onclick="setMarginMode('item')">품목별 개별 적용</button>
+    </div>
+    <!-- 전체 마진 -->
+    <div id="margin-global-area">
+      <div class="margin-global">
+        <span class="c-lbl">마진율</span>
+        <input class="margin-input" type="number" id="globalMargin" value="30" min="0" max="200" oninput="calc()"/>
+        <span class="c-lbl">%</span>
+        <span class="margin-preview" id="globalMarginPreview"></span>
+      </div>
+    </div>
+    <!-- 품목별 마진 힌트 -->
+    <div id="margin-item-area" style="display:none">
+      <div class="margin-item-hint">
+        각 품목 옆 <b>%</b> 입력란에서 개별 마진율을 조정하세요.<br>
+        기본값: <input type="number" id="defaultItemMargin" value="30" min="0" max="200" style="width:50px;padding:2px 6px;border:1px solid #e5e5e3;border-radius:5px;font-size:11px;text-align:center" oninput="applyDefaultMargin()"/>% &nbsp;
+        <button onclick="applyDefaultMargin()" style="font-size:10px;padding:2px 8px;border:1px solid #e5e5e3;border-radius:5px;cursor:pointer;background:#fff;font-family:inherit">전체 적용</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 추가 비용 -->
+  <div class="panel">
+    <div class="lbl" style="margin-top:0">추가 비용</div>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-lbl">시공비 단가 (품당)</div>
+        <div class="cost-row-inner">
+          <input class="cost-inp" type="number" id="costSigan" value="350000" oninput="calc()"/>
+          <span class="cost-unit">원</span>
+        </div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-lbl">시공 품수</div>
+        <div class="cost-row-inner">
+          <input class="cost-inp" type="number" id="costSiganQty" value="0" min="0" oninput="calc()"/>
+          <span class="cost-unit">품</span>
+        </div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-lbl">물류비</div>
+        <div class="cost-row-inner">
+          <input class="cost-inp" type="number" id="costLogistics" value="150000" oninput="calc()"/>
+          <span class="cost-unit">원</span>
+        </div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-lbl">폐기물 처리비</div>
+        <div class="cost-row-inner">
+          <input class="cost-inp" type="number" id="costWaste" value="80000" oninput="calc()"/>
+          <span class="cost-unit">원</span>
+        </div>
+      </div>
+      <div class="cost-item" style="grid-column:span 2">
+        <div class="cost-lbl">공과잡비</div>
+        <div class="cost-row-inner">
+          <input class="cost-inp" type="number" id="costMisc" value="50000" oninput="calc()"/>
+          <span class="cost-unit">원</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 금액 계산 -->
+  <div class="calc-box">
+    <div class="c-row"><span class="c-lbl">공장도 합계</span><span class="c-val" id="factoryTotal">0원</span></div>
+    <div class="c-row"><span class="c-lbl" id="marginLabel">마진 (30%)</span><span class="c-val orange" id="marginAmt">+ 0원</span></div>
+    <div class="sep"></div>
+    <div class="c-row"><span class="c-lbl">판매가 소계</span><span class="c-val" id="sellSubtotal">0원</span></div>
+    <div class="c-row"><span class="c-lbl">시공비 (<span id="siganQtyLabel">0</span>품)</span><span class="c-val blue" id="siganCost">+ 0원</span></div>
+    <div class="c-row"><span class="c-lbl">물류비</span><span class="c-val blue" id="logisticsCost">+ 0원</span></div>
+    <div class="c-row"><span class="c-lbl">폐기물 처리비</span><span class="c-val blue" id="wasteCost">+ 0원</span></div>
+    <div class="c-row"><span class="c-lbl">공과잡비</span><span class="c-val blue" id="miscCost">+ 0원</span></div>
+    <div class="sep"></div>
+    <div class="disc-row">
+      <span class="c-lbl" style="white-space:nowrap">할인</span>
+      <input class="inp" type="number" id="disc" placeholder="0" min="0" max="100" style="width:60px;text-align:center;padding:5px 8px" oninput="calc()"/>
+      <span class="c-lbl">%</span>
+      <span class="c-val" id="discAmt" style="margin-left:auto;font-size:12px;color:#e44">- 0원</span>
+    </div>
+    <div class="vat-row">
+      <button class="tog on" id="vatTog" onclick="toggleVat()"></button>
+      <span>부가세 (10%) 포함</span>
+      <span class="c-val" id="vatAmt" style="margin-left:auto;font-size:12px">+ 0원</span>
+    </div>
+    <div class="total-row">
+      <span>최종 견적금액</span>
+      <span id="finalTotal">0원</span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-p" onclick="previewQuote()">견적서 미리보기</button>
+    <button class="btn-s" onclick="openHistory()">히스토리</button>
+  </div>
+  <button class="btn-ghost" onclick="saveQuote()">현재 견적 저장하기</button>
+</div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-bg" id="previewMod">
+  <div class="modal">
+    <div class="modal-hd"><span>견적서 미리보기</span><button class="modal-x" onclick="closeM('previewMod')">×</button></div>
+    <div id="quoteContent"></div>
+    <button class="copy-btn" onclick="copyQuote()">📋 카카오톡용 텍스트 복사</button>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-bg" id="histMod">
+  <div class="modal">
+    <div class="modal-hd"><span>견적 히스토리</span><button class="modal-x" onclick="closeM('histMod')">×</button></div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<script>
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+
+// ─── DATA ───────────────────────────────────────────────
+const DB = {"PET 보르떼3":[{"no":1,"code":"W3068","size":"300*680*295","name":"300 일반벽장(H680)","supply":34400,"cat1":"상부장"},{"no":2,"code":"W3568","size":"350*680*295","name":"350 일반벽장(H680)","supply":36700,"cat1":"상부장"},{"no":3,"code":"W4068","size":"400*680*295","name":"400 일반벽장(H680)","supply":38800,"cat1":"상부장"},{"no":4,"code":"W4568","size":"450*680*295","name":"450 일반벽장(H680)","supply":41100,"cat1":"상부장"},{"no":5,"code":"W5068","size":"500*680*295","name":"500 일반벽장(H680)","supply":43300,"cat1":"상부장"},{"no":6,"code":"W6068","size":"600*680*295","name":"600 일반벽장(H680)","supply":49500,"cat1":"상부장"},{"no":7,"code":"WH6065","size":"600*650*295","name":"600 후드장(H650)","supply":42500,"cat1":"상부장"},{"no":8,"code":"W7068","size":"700*680*295","name":"700 일반벽장(H680)","supply":58100,"cat1":"상부장"},{"no":9,"code":"W8068","size":"800*680*295","name":"800 일반벽장(H680)","supply":62800,"cat1":"상부장"},{"no":10,"code":"W9068","size":"900*680*295","name":"900 일반벽장(H680)","supply":67300,"cat1":"상부장"},{"no":11,"code":"W1068","size":"1000*680*295","name":"1000 일반벽장(H680)","supply":71800,"cat1":"상부장"},{"no":12,"code":"WC7068","size":"700*680*295","name":"700 코너벽장(H680)","supply":51300,"cat1":"상부장"},{"no":13,"code":"WC7568","size":"750*680*295","name":"750 코너벽장(H680)","supply":53400,"cat1":"상부장"},{"no":14,"code":"W2F8068","size":"800*680*295","name":"800 2단 플랩벽장(H680)","supply":67300,"cat1":"상부장"},{"no":15,"code":"W2F9068","size":"900*680*295","name":"900 2단 플랩벽장(H680)","supply":71800,"cat1":"상부장"},{"no":16,"code":"W2F1068","size":"1000*680*295","name":"1000 2단 플랩벽장(H680)","supply":76700,"cat1":"상부장"},{"no":17,"code":"WF8038","size":"800*380*295","name":"800 1단 플랩벽장(H380)","supply":38400,"cat1":"상부장"},{"no":18,"code":"WF9038","size":"900*380*295","name":"900 1단 플랩벽장(H380)","supply":41000,"cat1":"상부장"},{"no":19,"code":"WF1038","size":"1000*380*295","name":"1000 1단 플랩벽장(H380)","supply":43800,"cat1":"상부장"},{"no":20,"code":"W3076","size":"300*760*295","name":"300 일반벽장(H760)","supply":36500,"cat1":"상부장"},{"no":21,"code":"W3576","size":"350*760*295","name":"350 일반벽장(H760)","supply":38800,"cat1":"상부장"},{"no":22,"code":"W4076","size":"400*760*295","name":"400 일반벽장(H760)","supply":41200,"cat1":"상부장"},{"no":23,"code":"W4576","size":"450*760*295","name":"450 일반벽장(H760)","supply":43600,"cat1":"상부장"},{"no":24,"code":"W5076","size":"500*760*295","name":"500 일반벽장(H760)","supply":46000,"cat1":"상부장"},{"no":25,"code":"W6076","size":"600*760*295","name":"600 일반벽장(H760)","supply":50700,"cat1":"상부장"},{"no":26,"code":"W7076","size":"700*760*295","name":"700 일반벽장(H760)","supply":61700,"cat1":"상부장"},{"no":27,"code":"W8076","size":"800*760*295","name":"800 일반벽장(H760)","supply":66900,"cat1":"상부장"},{"no":28,"code":"W9076","size":"900*760*295","name":"900 일반벽장(H760)","supply":71700,"cat1":"상부장"},{"no":29,"code":"W1076","size":"1000*760*295","name":"1000 일반벽장(H760)","supply":76400,"cat1":"상부장"},{"no":30,"code":"WC7076","size":"700*760*295","name":"700 코너벽장(H760)","supply":54100,"cat1":"상부장"},{"no":31,"code":"WC7576","size":"750*760*295","name":"750 코너벽장(H760)","supply":56400,"cat1":"상부장"},{"no":32,"code":"W2F8076","size":"800*760*295","name":"800 2단 플랩벽장(H760)","supply":75800,"cat1":"상부장"},{"no":33,"code":"W2F9076","size":"900*760*295","name":"900 2단 플랩벽장(H760)","supply":81100,"cat1":"상부장"},{"no":34,"code":"W2F1076","size":"1000*760*295","name":"1000 2단 플랩벽장(H760)","supply":86600,"cat1":"상부장"},{"no":35,"code":"B3072","size":"300*720*570","name":"300 일반 하부장","supply":43300,"cat1":"하부장"},{"no":36,"code":"B3572","size":"350*720*570","name":"350 일반 하부장","supply":45700,"cat1":"하부장"},{"no":37,"code":"B4072","size":"400*720*570","name":"400 일반 하부장","supply":48200,"cat1":"하부장"},{"no":38,"code":"B4572","size":"450*720*570","name":"450 일반 하부장","supply":50700,"cat1":"하부장"},{"no":39,"code":"B5072","size":"500*720*570","name":"500 일반 하부장","supply":53100,"cat1":"하부장"},{"no":40,"code":"B6072","size":"600*720*570","name":"600 일반 하부장","supply":58100,"cat1":"하부장"},{"no":41,"code":"B7072","size":"700*720*570","name":"700 일반 하부장","supply":69200,"cat1":"하부장"},{"no":42,"code":"B8072","size":"800*720*570","name":"800 일반 하부장","supply":74200,"cat1":"하부장"},{"no":43,"code":"B9072","size":"900*720*570","name":"900 일반 하부장","supply":79300,"cat1":"하부장"},{"no":44,"code":"B1072","size":"1000*720*570","name":"1000 일반 하부장","supply":84200,"cat1":"하부장"},{"no":45,"code":"BS9072","size":"900*720*570","name":"900 싱크 하부장","supply":74500,"cat1":"하부장"},{"no":46,"code":"BS1072","size":"1000*720*570","name":"1000 싱크 하부장","supply":78800,"cat1":"하부장"},{"no":47,"code":"BS1272","size":"1200*720*570","name":"1200 싱크 하부장","supply":87600,"cat1":"하부장"},{"no":48,"code":"BS9072D","size":"900*720*620","name":"900 싱크 하부장(D620)","supply":82100,"cat1":"하부장"},{"no":49,"code":"BS1072D","size":"1000*720*620","name":"1000 싱크 하부장(D620)","supply":86800,"cat1":"하부장"},{"no":50,"code":"BS1272D","size":"1200*720*620","name":"1200 싱크 하부장(D620)","supply":96200,"cat1":"하부장"},{"no":51,"code":"BA1572","size":"150*720*570","name":"150 인출 댐핑망장","supply":56200,"cat1":"하부장"},{"no":52,"code":"BA2072","size":"200*720*570","name":"200 인출 댐핑망장","supply":57200,"cat1":"하부장"},{"no":53,"code":"BA3072","size":"300*720*570","name":"300 인출 댐핑망장","supply":63900,"cat1":"하부장"},{"no":54,"code":"BO6047","size":"600*470*570","name":"600 빌트인 오븐장","supply":23900,"cat1":"하부장"},{"no":55,"code":"BR6047","size":"600*470*570","name":"600 하부 렌지장","supply":105700,"cat1":"하부장"},{"no":56,"code":"BL6047","size":"600*470*570","name":"600 하부 인출식 밥통장","supply":134600,"cat1":"하부장"},{"no":57,"code":"BC9072","size":"900*720*570","name":"900 코너하부장","supply":79900,"cat1":"하부장"},{"no":58,"code":"BC1072","size":"1000*720*570","name":"1000 코너하부장","supply":81500,"cat1":"하부장"},{"no":59,"code":"BC1272","size":"1200*720*570","name":"1200 코너하부장","supply":85200,"cat1":"하부장"},{"no":60,"code":"BC1472","size":"1400*720*570","name":"1400 코너 싱크하부장","supply":98200,"cat1":"하부장"},{"no":61,"code":"BC1572","size":"1500*720*570","name":"1500 코너 싱크하부장","supply":101100,"cat1":"하부장"},{"no":62,"code":"BC1672","size":"1600*720*570","name":"1600 코너 싱크하부장","supply":108100,"cat1":"하부장"},{"no":63,"code":"1BD6025","size":"600*250*570","name":"600 1단 서랍장","supply":48100,"cat1":"서랍장"},{"no":64,"code":"2BD3072","size":"300*720*570","name":"300 2단 서랍장","supply":76700,"cat1":"서랍장"},{"no":65,"code":"2BD4072","size":"400*720*570","name":"400 2단 서랍장","supply":82900,"cat1":"서랍장"},{"no":66,"code":"2BD4572","size":"450*720*570","name":"450 2단 서랍장","supply":87400,"cat1":"서랍장"},{"no":67,"code":"2BD6072","size":"600*720*570","name":"600 2단 서랍장","supply":95700,"cat1":"서랍장"},{"no":68,"code":"2BD9072","size":"900*720*570","name":"900 2단 서랍장","supply":115100,"cat1":"서랍장"},{"no":69,"code":"2BD6072in","size":"600*720*570","name":"600 2단 이너 서랍장","supply":113400,"cat1":"서랍장"},{"no":70,"code":"2BD9072in","size":"900*720*570","name":"900 2단 이너 서랍장","supply":132100,"cat1":"서랍장"},{"no":71,"code":"3BD3072","size":"300*720*570","name":"300 3단 서랍장","supply":92500,"cat1":"서랍장"},{"no":72,"code":"3BD4072","size":"400*720*570","name":"400 3단 서랍장","supply":99500,"cat1":"서랍장"},{"no":73,"code":"3BD4572","size":"450*720*570","name":"450 3단 서랍장","supply":105000,"cat1":"서랍장"},{"no":74,"code":"3BD6072","size":"600*720*570","name":"600 3단 서랍장","supply":113500,"cat1":"서랍장"},{"no":75,"code":"3BD9072","size":"900*720*570","name":"900 3단 서랍장","supply":135000,"cat1":"서랍장"},{"no":76,"code":"2TD6072","size":"600*720*570","name":"600 2단 텐덤 서랍장","supply":129900,"cat1":"서랍장"},{"no":77,"code":"2TD9072","size":"900*720*570","name":"900 2단 텐덤 서랍장","supply":147700,"cat1":"서랍장"},{"no":78,"code":"2TD6072in","size":"600*720*570","name":"600 2단 텐덤 이너 서랍장","supply":158600,"cat1":"서랍장"},{"no":79,"code":"2TD9072in","size":"900*720*570","name":"900 2단 텐덤 이너 서랍장","supply":180500,"cat1":"서랍장"},{"no":80,"code":"EL6046","size":"600*460*570","name":"600 가전소물장(상부)","supply":52600,"cat1":"키큰장"},{"no":81,"code":"EL6090","size":"600*900*570","name":"600 가전소물장(중간)","supply":221000,"cat1":"키큰장"},{"no":82,"code":"TL45139","size":"450*1390*570","name":"450 일반키큰장 상부장","supply":93900,"cat1":"키큰장"},{"no":83,"code":"TL60139","size":"600*1390*570","name":"600 일반키큰장 상부장","supply":107300,"cat1":"키큰장"},{"no":84,"code":"RF1035D","size":"1000*350*670","name":"1000 냉장고 벽장(플랩)","supply":66600,"cat1":"냉장고장"},{"no":85,"code":"RF1035","size":"1000*350*570","name":"1000 냉장고 벽장(플랩)","supply":62500,"cat1":"냉장고장"},{"no":86,"code":"RF8035D","size":"800*350*670","name":"800 냉장고 벽장(플랩)","supply":56400,"cat1":"냉장고장"},{"no":87,"code":"RF8035","size":"800*350*570","name":"800 냉장고 벽장(플랩)","supply":52800,"cat1":"냉장고장"},{"no":88,"code":"2RF1035","size":"1000*350*295","name":"1000 냉장고 벽장(양문)","supply":45700,"cat1":"냉장고장"},{"no":89,"code":"2RF8035","size":"800*350*295","name":"800 냉장고 벽장(양문)","supply":40300,"cat1":"냉장고장"},{"no":90,"code":"BF9335","size":"930*350*670","name":"930 비스포크 냉장고장(플랩)","supply":64900,"cat1":"냉장고장"},{"no":91,"code":"BF7135","size":"715*350*670","name":"715 비스포크 냉장고장(플랩)","supply":54400,"cat1":"냉장고장"},{"no":92,"code":"BF6135","size":"610*350*670","name":"610 비스포크 냉장고장(플랩)","supply":50700,"cat1":"냉장고장"},{"no":107,"code":"CHAN","size":"78*2400","name":"목찬넬 (60+40*2400)","supply":22800,"cat1":"기타"}],"PET 스페셜솔리드":[{"no":1,"code":"W3068","supply":35800},{"no":2,"code":"W3568","supply":38300},{"no":3,"code":"W4068","supply":40800},{"no":4,"code":"W4568","supply":43300},{"no":5,"code":"W5068","supply":45700},{"no":6,"code":"W6068","supply":50700},{"no":7,"code":"WH6065","supply":43700},{"no":8,"code":"W7068","supply":61300},{"no":9,"code":"W8068","supply":66800},{"no":10,"code":"W9068","supply":71700},{"no":11,"code":"W1068","supply":76600},{"no":12,"code":"WC7068","supply":65300},{"no":13,"code":"WC7568","supply":67800},{"no":14,"code":"W2F8068","supply":73900},{"no":15,"code":"W2F9068","supply":79100},{"no":16,"code":"W2F1068","supply":84800},{"no":17,"code":"WF8038","supply":40600},{"no":18,"code":"WF9038","supply":43400},{"no":19,"code":"WF1038","supply":46500},{"no":20,"code":"W3076","supply":38100},{"no":21,"code":"W3576","supply":40700},{"no":22,"code":"W4076","supply":43400},{"no":23,"code":"W4576","supply":46100},{"no":24,"code":"W5076","supply":48800},{"no":25,"code":"W6076","supply":54000},{"no":26,"code":"W7076","supply":65500},{"no":27,"code":"W8076","supply":71300},{"no":28,"code":"W9076","supply":76700},{"no":29,"code":"W1076","supply":82000},{"no":30,"code":"WC7076","supply":70900},{"no":31,"code":"WC7576","supply":73500},{"no":32,"code":"W2F8076","supply":80200},{"no":33,"code":"W2F9076","supply":85900},{"no":34,"code":"W2F1076","supply":92000},{"no":35,"code":"B3072","supply":44900},{"no":36,"code":"B3572","supply":47600},{"no":37,"code":"B4072","supply":50400},{"no":38,"code":"B4572","supply":53200},{"no":39,"code":"B5072","supply":55900},{"no":40,"code":"B6072","supply":61400},{"no":41,"code":"B7072","supply":73000},{"no":42,"code":"B8072","supply":78600},{"no":43,"code":"B9072","supply":84300},{"no":44,"code":"B1072","supply":89800},{"no":45,"code":"BS9072","supply":79500},{"no":46,"code":"BS1072","supply":84400},{"no":47,"code":"BS1272","supply":94200},{"no":48,"code":"BS9072D","supply":87100},{"no":49,"code":"BS1072D","supply":92400},{"no":50,"code":"BS1272D","supply":102800},{"no":51,"code":"BA1572","supply":57300},{"no":52,"code":"BA2072","supply":58300},{"no":53,"code":"BA3072","supply":65500},{"no":54,"code":"BO6047","supply":23900},{"no":55,"code":"BR6047","supply":114300},{"no":56,"code":"BL6047","supply":143200},{"no":57,"code":"BC9072","supply":83100},{"no":58,"code":"BC1072","supply":85000},{"no":59,"code":"BC1272","supply":89300},{"no":60,"code":"BC1472","supply":104200},{"no":61,"code":"BC1572","supply":107700},{"no":62,"code":"BC1672","supply":115300},{"no":63,"code":"1BD6025","supply":49300},{"no":64,"code":"2BD3072","supply":78300},{"no":65,"code":"2BD4072","supply":85100},{"no":66,"code":"2BD4572","supply":90200},{"no":67,"code":"2BD6072","supply":99100},{"no":68,"code":"2BD9072","supply":119500},{"no":69,"code":"2BD6072in","supply":116800},{"no":70,"code":"2BD9072in","supply":136500},{"no":71,"code":"3BD3072","supply":94100},{"no":72,"code":"3BD4072","supply":101600},{"no":73,"code":"3BD4572","supply":108300},{"no":74,"code":"3BD6072","supply":117100},{"no":75,"code":"3BD9072","supply":139600},{"no":76,"code":"2TD6072","supply":133300},{"no":77,"code":"2TD9072","supply":152100},{"no":78,"code":"2TD6072in","supply":162000},{"no":79,"code":"2TD9072in","supply":184900},{"no":80,"code":"EL6046","supply":55500},{"no":81,"code":"EL6090","supply":244400},{"no":82,"code":"TL45139","supply":98300},{"no":83,"code":"TL60139","supply":113000},{"no":84,"code":"RF1035D","supply":69900},{"no":85,"code":"RF1035","supply":65800},{"no":86,"code":"RF8035D","supply":58600},{"no":87,"code":"RF8035","supply":55000},{"no":88,"code":"2RF1035","supply":48500},{"no":89,"code":"2RF8035","supply":42500},{"no":90,"code":"BF9335","supply":66600},{"no":91,"code":"BF7135","supply":56600},{"no":92,"code":"BF6135","supply":52700},{"no":107,"code":"CHAN","supply":24800}],"PET 프리미엄 솔리드":[{"no":1,"code":"W3068","supply":37200},{"no":2,"code":"W3568","supply":39900},{"no":3,"code":"W4068","supply":42600},{"no":4,"code":"W4568","supply":45300},{"no":5,"code":"W5068","supply":48000},{"no":6,"code":"W6068","supply":53400},{"no":7,"code":"WH6065","supply":46400},{"no":8,"code":"W7068","supply":64500},{"no":9,"code":"W8068","supply":70400},{"no":10,"code":"W9068","supply":75700},{"no":11,"code":"W1068","supply":81200},{"no":12,"code":"WC7068","supply":68700},{"no":13,"code":"WC7568","supply":71400},{"no":14,"code":"W2F8068","supply":59300},{"no":15,"code":"W2F9068","supply":80000},{"no":16,"code":"W2F1068","supply":85700},{"no":17,"code":"WF8038","supply":42700},{"no":18,"code":"WF9038","supply":45700},{"no":19,"code":"WF1038","supply":49000},{"no":20,"code":"W3076","supply":39700},{"no":21,"code":"W3576","supply":42500},{"no":22,"code":"W4076","supply":45500},{"no":23,"code":"W4576","supply":48400},{"no":24,"code":"W5076","supply":51300},{"no":25,"code":"W6076","supply":57100},{"no":26,"code":"W7076","supply":69100},{"no":27,"code":"W8076","supply":75500},{"no":28,"code":"W9076","supply":81300},{"no":29,"code":"W1076","supply":87000},{"no":30,"code":"WC7076","supply":73400},{"no":31,"code":"WC7576","supply":76300},{"no":32,"code":"W2F8076","supply":84400},{"no":33,"code":"W2F9076","supply":90500},{"no":34,"code":"W2F1076","supply":97000},{"no":35,"code":"B3072","supply":46500},{"no":36,"code":"B3572","supply":49400},{"no":37,"code":"B4072","supply":52500},{"no":38,"code":"B4572","supply":55500},{"no":39,"code":"B5072","supply":58400},{"no":40,"code":"B6072","supply":64500},{"no":41,"code":"B7072","supply":76600},{"no":42,"code":"B8072","supply":82800},{"no":43,"code":"B9072","supply":88900},{"no":44,"code":"B1072","supply":94800},{"no":45,"code":"BS9072","supply":84100},{"no":46,"code":"BS1072","supply":89400},{"no":47,"code":"BS1272","supply":100400},{"no":48,"code":"BS9072D","supply":91700},{"no":49,"code":"BS1072D","supply":97400},{"no":50,"code":"BS1272D","supply":109000},{"no":51,"code":"BA1572","supply":58200},{"no":52,"code":"BA2072","supply":59200},{"no":53,"code":"BA3072","supply":66900},{"no":54,"code":"BO6047","supply":23900},{"no":55,"code":"BR6047","supply":125100},{"no":56,"code":"BL6047","supply":154000},{"no":57,"code":"BC9072","supply":86100},{"no":58,"code":"BC1072","supply":88200},{"no":59,"code":"BC1272","supply":91000},{"no":60,"code":"BC1472","supply":109700},{"no":61,"code":"BC1572","supply":113600},{"no":62,"code":"BC1672","supply":121800},{"no":63,"code":"1BD6025","supply":50500},{"no":64,"code":"2BD3072","supply":79900},{"no":65,"code":"2BD4072","supply":87300},{"no":66,"code":"2BD4572","supply":92800},{"no":67,"code":"2BD6072","supply":102100},{"no":68,"code":"2BD9072","supply":123500},{"no":69,"code":"2BD6072in","supply":119800},{"no":70,"code":"2BD9072in","supply":140500},{"no":71,"code":"3BD3072","supply":95700},{"no":72,"code":"3BD4072","supply":103700},{"no":73,"code":"3BD4572","supply":110800},{"no":74,"code":"3BD6072","supply":119900},{"no":75,"code":"3BD9072","supply":144300},{"no":76,"code":"2TD6072","supply":136300},{"no":77,"code":"2TD9072","supply":156100},{"no":78,"code":"2TD6072in","supply":165000},{"no":79,"code":"2TD9072in","supply":188900},{"no":80,"code":"EL6046","supply":58200},{"no":81,"code":"EL6090","supply":266000},{"no":82,"code":"TL45139","supply":102300},{"no":83,"code":"TL60139","supply":118400},{"no":84,"code":"RF1035D","supply":73000},{"no":85,"code":"RF1035","supply":68900},{"no":86,"code":"RF8035D","supply":60700},{"no":87,"code":"RF8035","supply":57100},{"no":88,"code":"2RF1035","supply":50900},{"no":89,"code":"2RF8035","supply":44500},{"no":90,"code":"BF9335","supply":71300},{"no":91,"code":"BF7135","supply":58700},{"no":92,"code":"BF6135","supply":54500},{"no":107,"code":"CHAN","supply":26800}],"PET 솔리드엠보":[{"no":1,"code":"W3068","supply":37500},{"no":6,"code":"W6068","supply":54100},{"no":11,"code":"W1068","supply":82400},{"no":35,"code":"B3072","supply":46900},{"no":44,"code":"B1072","supply":96200},{"no":45,"code":"BS9072","supply":85300},{"no":47,"code":"BS1272","supply":102000},{"no":57,"code":"BC9072","supply":86800},{"no":63,"code":"1BD6025","supply":50800},{"no":67,"code":"2BD6072","supply":102900},{"no":80,"code":"EL6046","supply":58900},{"no":84,"code":"RF1035D","supply":73800},{"no":107,"code":"CHAN","supply":27200}],"PET 메탈솔리드":[{"no":1,"code":"W3068","supply":38600},{"no":6,"code":"W6068","supply":56300},{"no":11,"code":"W1068","supply":86000},{"no":35,"code":"B3072","supply":48100},{"no":44,"code":"B1072","supply":100400},{"no":45,"code":"BS9072","supply":89100},{"no":57,"code":"BC9072","supply":89300},{"no":63,"code":"1BD6025","supply":51700},{"no":67,"code":"2BD6072","supply":105500},{"no":80,"code":"EL6046","supply":61100},{"no":84,"code":"RF1035D","supply":76300},{"no":107,"code":"CHAN","supply":28800}],"스마트,맨하탄 우레탄":[{"no":1,"code":"W3068","supply":78800},{"no":6,"code":"W6068","supply":127300},{"no":8,"code":"W7068","supply":158900},{"no":9,"code":"W8068","supply":173800},{"no":11,"code":"W1068","supply":204800},{"no":35,"code":"B3072","supply":86700},{"no":40,"code":"B6072","supply":135900},{"no":44,"code":"B1072","supply":214200},{"no":45,"code":"BS9072","supply":196700},{"no":47,"code":"BS1272","supply":243200},{"no":63,"code":"1BD6025","supply":84600},{"no":67,"code":"2BD6072","supply":165100},{"no":75,"code":"3BD9072","supply":241500},{"no":80,"code":"EL6046","supply":113100},{"no":82,"code":"TL45139","supply":227300},{"no":84,"code":"RF1035D","supply":128300},{"no":88,"code":"2RF1035","supply":117500}],"라치오 우레탄":[{"no":1,"code":"W3068","supply":56800},{"no":6,"code":"W6068","supply":91300},{"no":11,"code":"W1068","supply":142800},{"no":35,"code":"B3072","supply":64700},{"no":44,"code":"B1072","supply":152200},{"no":45,"code":"BS9072","supply":138700},{"no":63,"code":"1BD6025","supply":58200},{"no":67,"code":"2BD6072","supply":136100},{"no":80,"code":"EL6046","supply":89100},{"no":84,"code":"RF1035D","supply":97300}],"무늬목 화이트오크,월넛":[{"no":1,"code":"W3068","supply":99800},{"no":6,"code":"W6068","supply":169300},{"no":11,"code":"W1068","supply":278800},{"no":35,"code":"B3072","supply":107700},{"no":44,"code":"B1072","supply":288200},{"no":45,"code":"BS9072","supply":260700},{"no":47,"code":"BS1272","supply":327200},{"no":63,"code":"1BD6025","supply":102200},{"no":67,"code":"2BD6072","supply":207100},{"no":80,"code":"EL6046","supply":128100},{"no":84,"code":"RF1035D","supply":282300}]};
+
+const MASTER = DB['PET 보르떼3'];
+const MATS = Object.keys(DB);
+const CATS = ['전체','상부장','하부장','서랍장','키큰장','냉장고장','기타'];
+
+let selMat = MATS[0];
+let selCat = '전체';
+let cart = [];   // {code, name, size, factory, qty, mat, margin}
+let vatOn = true;
+let marginMode = 'global'; // 'global' | 'item'
+
+// ─── INIT ────────────────────────────────────────────────
+
+function switchTab(tab) {
+  const left = document.getElementById('panelLeft');
+  const right = document.getElementById('panelRight');
+  const btns = document.querySelectorAll('.tab-nav button');
+  if(tab==='left'){
+    left.classList.add('active'); right.classList.remove('active');
+    btns[0].className='on'; btns[1].className='';
+  } else {
+    right.classList.add('active'); left.classList.remove('active');
+    btns[1].className='on'; btns[0].className='';
+  }
+}
+function initUI() {
+  // Material buttons
+  const mr = document.getElementById('matRow');
+  MATS.forEach((m,i) => {
+    const b = document.createElement('button');
+    b.className = 'mat-btn' + (i===0?' on':'');
+    const lbl = m.replace('PET ','').replace(' 우레탄','').replace(' 화이트오크,월넛','');
+    b.textContent = lbl; b.title = m;
+    b.onclick = () => {
+      selMat = m;
+      document.querySelectorAll('.mat-btn').forEach((x,j)=>x.className='mat-btn'+(MATS[j]===m?' on':''));
+      renderItems();
+    };
+    mr.appendChild(b);
+  });
+  // Category buttons
+  const cr = document.getElementById('catRow');
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cat-btn' + (c===selCat?' on':'');
+    b.textContent = c;
+    b.onclick = () => {
+      selCat = c;
+      document.querySelectorAll('.cat-btn').forEach((x,j)=>x.className='cat-btn'+(CATS[j]===c?' on':''));
+      renderItems();
+    };
+    cr.appendChild(b);
+  });
+}
+
+// ─── ITEMS ───────────────────────────────────────────────
+function getSupply(code, mat) {
+  const matItems = DB[mat] || [];
+  const found = matItems.find(i=>i.code===code);
+  return found ? found.supply : (MASTER.find(i=>i.code===code)?.supply || 0);
+}
+
+function getSellPrice(factory, margin) {
+  return Math.round(factory * (1 + margin/100));
+}
+
+function renderItems() {
+  const q = document.getElementById('srch').value.trim().toLowerCase();
+  let items = MASTER.map(item => ({
+    ...item,
+    factory: getSupply(item.code, selMat)
+  }));
+  if (selCat !== '전체') items = items.filter(i=>i.cat1===selCat);
+  if (q) items = items.filter(i=>i.name.toLowerCase().includes(q)||i.code.toLowerCase().includes(q)||i.size.includes(q));
+
+  const el = document.getElementById('itemList');
+  if (!items.length) { el.innerHTML='<div style="padding:16px;text-align:center;font-size:12px;color:#ccc">검색 결과 없음</div>'; window._fi=[]; return; }
+  window._fi = items;
+
+  const gm = parseInt(document.getElementById('globalMargin').value)||0;
+  el.innerHTML = items.map((item,i) => {
+    const sell = getSellPrice(item.factory, gm);
+    return `<div class="item-row" onclick="addItem(${i})">
+      <div class="item-name">${item.name}</div>
+      <div class="item-size">${item.size}</div>
+      <div class="item-factory">${item.factory.toLocaleString()}</div>
+      <div class="item-sell">${sell.toLocaleString()}원</div>
+      <button class="add-btn" onclick="event.stopPropagation();addItem(${i})">+</button>
+    </div>`;
+  }).join('');
+}
+
+function addItem(i) {
+  const item = window._fi[i];
+  if (!item) return;
+  const gm = parseInt(document.getElementById('globalMargin').value)||0;
+  const dm = parseInt(document.getElementById('defaultItemMargin').value)||gm;
+  const margin = marginMode==='item' ? dm : gm;
+  const key = item.code + '|' + selMat;
+  const ei = cart.findIndex(c=>c.key===key);
+  if (ei>=0) { cart[ei].qty++; }
+  else { cart.push({key, code:item.code, name:item.name, size:item.size, factory:item.factory, qty:1, mat:selMat, margin}); }
+  renderCart(); calc();
+}
+
+function addCustom() {
+  const name = document.getElementById('cName').value.trim();
+  const factory = parseInt(document.getElementById('cPrice').value)||0;
+  const qty = parseInt(document.getElementById('cQty').value)||1;
+  if (!name) return;
+  const gm = parseInt(document.getElementById('globalMargin').value)||0;
+  const dm = parseInt(document.getElementById('defaultItemMargin').value)||gm;
+  const margin = marginMode==='item' ? dm : gm;
+  cart.push({key:'custom_'+Date.now(), code:'', name, size:'', factory, qty, mat:'직접입력', margin});
+  document.getElementById('cName').value='';
+  document.getElementById('cPrice').value='';
+  document.getElementById('cQty').value='1';
+  renderCart(); calc();
+}
+
+// ─── CART ────────────────────────────────────────────────
+function renderCart() {
+  document.getElementById('cartBadge').textContent = cart.length;
+  const el = document.getElementById('cartArea');
+  if (!cart.length) { el.innerHTML='<div class="empty-cart">품목을 선택하거나 직접 입력하세요</div>'; return; }
+  const gm = parseInt(document.getElementById('globalMargin').value)||0;
+  el.innerHTML = cart.map((c,i) => {
+    const margin = marginMode==='global' ? gm : c.margin;
+    const sell = getSellPrice(c.factory, margin);
+    const itemTotal = sell * c.qty;
+    const marginInput = marginMode==='item'
+      ? `<input type="number" value="${c.margin}" min="0" max="300" style="width:44px;padding:2px 4px;border:1px solid #e5e5e3;border-radius:4px;font-size:10px;text-align:center" onchange="updateItemMargin(${i},this.value)" onclick="event.stopPropagation()"/>%`
+      : `<span class="cr-margin">+${margin}%</span>`;
+    return `<div class="cart-row">
+      <div style="flex:1">
+        <div class="cr-name">${c.name}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+          <span class="cr-mat">${c.mat}</span>
+          ${marginInput}
+        </div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qb" onclick="chgQ(${i},-1)">−</button>
+        <span class="qn">${c.qty}</span>
+        <button class="qb" onclick="chgQ(${i},1)">+</button>
+      </div>
+      <div class="cr-amt">${itemTotal.toLocaleString()}원</div>
+      <button class="cr-del" onclick="delI(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function updateItemMargin(i, val) {
+  cart[i].margin = parseInt(val)||0;
+  renderCart(); calc();
+}
+
+function chgQ(i,d) { cart[i].qty=Math.max(1,cart[i].qty+d); renderCart(); calc(); }
+function delI(i) { cart.splice(i,1); renderCart(); calc(); }
+function resetCart() { if(!cart.length)return; if(confirm('견적 항목을 모두 삭제할까요?')){cart=[];renderCart();calc();} }
+
+// ─── MARGIN MODE ─────────────────────────────────────────
+function setMarginMode(mode) {
+  marginMode = mode;
+  document.getElementById('mtab-global').className = 'mtab'+(mode==='global'?' on':'');
+  document.getElementById('mtab-item').className = 'mtab'+(mode==='item'?' on':'');
+  document.getElementById('margin-global-area').style.display = mode==='global'?'block':'none';
+  document.getElementById('margin-item-area').style.display = mode==='item'?'block':'none';
+  renderItems(); renderCart(); calc();
+}
+
+function applyDefaultMargin() {
+  const dm = parseInt(document.getElementById('defaultItemMargin').value)||0;
+  cart.forEach(c=>c.margin=dm);
+  renderCart(); calc();
+}
+
+// ─── CALC ────────────────────────────────────────────────
+function calc() {
+  const gm = parseInt(document.getElementById('globalMargin').value)||0;
+  let factorySum = 0, sellSum = 0;
+  cart.forEach(c => {
+    const margin = marginMode==='global' ? gm : c.margin;
+    const sell = getSellPrice(c.factory, margin);
+    factorySum += c.factory * c.qty;
+    sellSum += sell * c.qty;
+  });
+  const marginAmt = sellSum - factorySum;
+
+  const siganUnit = parseInt(document.getElementById('costSigan').value)||0;
+  const siganQty = parseInt(document.getElementById('costSiganQty').value)||0;
+  const siganCost = siganUnit * siganQty;
+  const logistics = parseInt(document.getElementById('costLogistics').value)||0;
+  const waste = parseInt(document.getElementById('costWaste').value)||0;
+  const misc = parseInt(document.getElementById('costMisc').value)||0;
+
+  const beforeDisc = sellSum + siganCost + logistics + waste + misc;
+  const disc = parseInt(document.getElementById('disc').value)||0;
+  const discAmt = Math.round(beforeDisc * disc / 100);
+  const afterDisc = beforeDisc - discAmt;
+  const vat = vatOn ? Math.round(afterDisc * 0.1) : 0;
+  const total = afterDisc + vat;
+
+  // Update display
+  document.getElementById('factoryTotal').textContent = factorySum.toLocaleString()+'원';
+  document.getElementById('marginLabel').textContent = `마진 (${marginMode==='global'?gm+'%':'품목별'})`;
+  document.getElementById('marginAmt').textContent = '+ '+marginAmt.toLocaleString()+'원';
+  document.getElementById('sellSubtotal').textContent = sellSum.toLocaleString()+'원';
+  document.getElementById('siganQtyLabel').textContent = siganQty;
+  document.getElementById('siganCost').textContent = '+ '+siganCost.toLocaleString()+'원';
+  document.getElementById('logisticsCost').textContent = '+ '+logistics.toLocaleString()+'원';
+  document.getElementById('wasteCost').textContent = '+ '+waste.toLocaleString()+'원';
+  document.getElementById('miscCost').textContent = '+ '+misc.toLocaleString()+'원';
+  document.getElementById('discAmt').textContent = '- '+discAmt.toLocaleString()+'원';
+  document.getElementById('vatAmt').textContent = '+ '+vat.toLocaleString()+'원';
+  document.getElementById('finalTotal').textContent = total.toLocaleString()+'원';
+
+  // Margin preview
+  const preview = factorySum>0 ? `→ 판매가 ${sellSum.toLocaleString()}원` : '';
+  const el = document.getElementById('globalMarginPreview');
+  if(el) el.textContent = preview;
+
+  return {factorySum, sellSum, marginAmt, siganCost, siganQty, logistics, waste, misc, discAmt, vat, total, disc, gm};
+}
+
+function toggleVat() {
+  vatOn = !vatOn;
+  document.getElementById('vatTog').className = 'tog'+(vatOn?' on':'');
+  calc();
+}
+
+// ─── QUOTE PREVIEW ───────────────────────────────────────
+function previewQuote() {
+  if (!cart.length) { alert('품목을 추가해주세요'); return; }
+  const cust = document.getElementById('cCust').value||'고객';
+  const phone = document.getElementById('cPhone').value;
+  const addr = document.getElementById('cAddr').value;
+  const note = document.getElementById('cNote').value;
+  const {factorySum,sellSum,marginAmt,siganCost,siganQty,logistics,waste,misc,discAmt,vat,total,disc,gm} = calc();
+  const date = new Date().toLocaleDateString('ko-KR');
+  const qno = 'Q'+Date.now().toString().slice(-6);
+  const gm2 = parseInt(document.getElementById('globalMargin').value)||0;
+
+  let itemRows = cart.map(c => {
+    const margin = marginMode==='global' ? gm2 : c.margin;
+    const sell = getSellPrice(c.factory, margin);
+    return `<tr>
+      <td>${c.name}</td>
+      <td style="font-size:10px;color:#aaa">${c.mat}</td>
+      <td style="text-align:right">${c.factory.toLocaleString()}</td>
+      <td style="text-align:right;color:#e67e22">+${margin}%</td>
+      <td style="text-align:right">${sell.toLocaleString()}</td>
+      <td style="text-align:right">${c.qty}</td>
+      <td style="text-align:right;font-weight:500">${(sell*c.qty).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('quoteContent').innerHTML = `
+    <div class="qhd">
+      <div class="qhd-title">견 &nbsp; 적 &nbsp; 서</div>
+      <div class="qhd-sub">${qno} &nbsp;·&nbsp; ${date} &nbsp;·&nbsp; 한송 씽크대</div>
+    </div>
+    ${cust||phone||addr ? `<div class="qsec">
+      <div class="qsec-lbl">고객 정보</div>
+      <div class="qinfo">
+        <b>고객명:</b> ${cust}${phone?' &nbsp;|&nbsp; <b>연락처:</b> '+phone:''}<br>
+        ${addr?'<b>설치주소:</b> '+addr+'<br>':''}
+        ${note?'<b>메모:</b> '+note:''}
+      </div>
+    </div>`:''}
+    <div class="qsec">
+      <div class="qsec-lbl">견적 항목</div>
+      <table class="qtbl">
+        <tr><th>품목명</th><th>마감재</th><th style="text-align:right">공장도</th><th style="text-align:right">마진</th><th style="text-align:right">판매가</th><th style="text-align:right">수량</th><th style="text-align:right">금액</th></tr>
+        ${itemRows}
+      </table>
+    </div>
+    <div class="qtot">
+      <div class="qtot-row"><span>공장도 합계</span><span>${factorySum.toLocaleString()}원</span></div>
+      <div class="qtot-row"><span>마진</span><span style="color:#e67e22">+ ${marginAmt.toLocaleString()}원</span></div>
+      <div class="qtot-row"><b>판매가 소계</b><span><b>${sellSum.toLocaleString()}원</b></span></div>
+      <div class="qtot-sep"></div>
+      ${siganQty>0?`<div class="qtot-row"><span>시공비 (${siganQty}품)</span><span style="color:#2980b9">+ ${siganCost.toLocaleString()}원</span></div>`:''}
+      ${logistics>0?`<div class="qtot-row"><span>물류비</span><span style="color:#2980b9">+ ${logistics.toLocaleString()}원</span></div>`:''}
+      ${waste>0?`<div class="qtot-row"><span>폐기물 처리비</span><span style="color:#2980b9">+ ${waste.toLocaleString()}원</span></div>`:''}
+      ${misc>0?`<div class="qtot-row"><span>공과잡비</span><span style="color:#2980b9">+ ${misc.toLocaleString()}원</span></div>`:''}
+      ${disc>0?`<div class="qtot-sep"></div><div class="qtot-row"><span>할인 (${disc}%)</span><span style="color:#e44">- ${discAmt.toLocaleString()}원</span></div>`:''}
+      ${vatOn?`<div class="qtot-row"><span>부가세 (10%)</span><span>+ ${vat.toLocaleString()}원</span></div>`:''}
+      <div class="qtot-final"><span>최종 견적금액</span><span>${total.toLocaleString()}원</span></div>
+    </div>`;
+  document.getElementById('previewMod').className='modal-bg open';
+}
+
+// ─── COPY KAKAO ──────────────────────────────────────────
+function copyQuote() {
+  const cust = document.getElementById('cCust').value||'고객';
+  const phone = document.getElementById('cPhone').value;
+  const note = document.getElementById('cNote').value;
+  const {factorySum,sellSum,marginAmt,siganCost,siganQty,logistics,waste,misc,discAmt,vat,total,disc} = calc();
+  const date = new Date().toLocaleDateString('ko-KR');
+  const qno = 'Q'+Date.now().toString().slice(-6);
+  const gm2 = parseInt(document.getElementById('globalMargin').value)||0;
+
+  let t = `📋 한송 씽크대 견적서\n${qno} | ${date}\n${'─'.repeat(26)}\n`;
+  t += `👤 ${cust}${phone?' | '+phone:''}\n${'─'.repeat(26)}\n`;
+  cart.forEach(c => {
+    const margin = marginMode==='global' ? gm2 : c.margin;
+    const sell = getSellPrice(c.factory, margin);
+    t += `• ${c.name} [${c.mat}]\n  × ${c.qty}개  →  ${(sell*c.qty).toLocaleString()}원\n`;
+  });
+  t += `${'─'.repeat(26)}\n`;
+  t += `판매가 소계  ${sellSum.toLocaleString()}원\n`;
+  if(siganQty>0) t += `시공비(${siganQty}품)  + ${siganCost.toLocaleString()}원\n`;
+  if(logistics>0) t += `물류비  + ${logistics.toLocaleString()}원\n`;
+  if(waste>0) t += `폐기물처리비  + ${waste.toLocaleString()}원\n`;
+  if(misc>0) t += `공과잡비  + ${misc.toLocaleString()}원\n`;
+  if(disc>0) t += `할인(${disc}%)  - ${discAmt.toLocaleString()}원\n`;
+  if(vatOn) t += `부가세(10%)  + ${vat.toLocaleString()}원\n`;
+  t += `${'─'.repeat(26)}\n💰 최종금액  ${total.toLocaleString()}원`;
+  if(note) t += `\n\n📝 메모: ${note}`;
+
+  navigator.clipboard.writeText(t)
+    .then(()=>alert('복사됐어요!\n카카오톡에 붙여넣기 하세요 😊'))
+    .catch(()=>{
+      const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+      alert('복사됐어요!\n카카오톡에 붙여넣기 하세요 😊');
+    });
+}
+
+// ─── CLOUD ───────────────────────────────────────────────
+const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbyAp7DfYYulaicFCr7TU0GdqOVkQEwsDfgdo80vdcpnz4WK3gIRPlPtkD3Vyky2qhw1CQ/exec';
+
+async function cloudSave(data) {
+  const res = await fetch(CLOUD_URL, {
+    method:'POST',
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+async function cloudLoad() {
+  const res = await fetch(CLOUD_URL + '?action=load');
+  return res.json();
+}
+
+async function cloudDelete(id) {
+  await fetch(CLOUD_URL, {
+    method:'POST',
+    body: JSON.stringify({action:'delete', id})
+  });
+}
+
+// ─── SAVE / LOAD ─────────────────────────────────────────
+async function saveQuote() {
+  if (!cart.length) { alert('품목을 추가해주세요'); return; }
+  const cust = document.getElementById('cCust').value||'이름없음';
+  const {total, factorySum, sellSum} = calc();
+  const snapshot = {
+    action:'save',
+    id:Date.now(), date:new Date().toLocaleDateString('ko-KR'),
+    custName:cust, custPhone:document.getElementById('cPhone').value,
+    custAddr:document.getElementById('cAddr').value, custNote:document.getElementById('cNote').value,
+    cart:[...cart], marginMode,
+    globalMargin:document.getElementById('globalMargin').value,
+    discRate:document.getElementById('disc').value, vatOn,
+    siganUnit:document.getElementById('costSigan').value,
+    siganQty:document.getElementById('costSiganQty').value,
+    logistics:document.getElementById('costLogistics').value,
+    waste:document.getElementById('costWaste').value,
+    misc:document.getElementById('costMisc').value,
+    total, factorySum, sellSum
+  };
+
+  // 저장 버튼 비활성화
+  const btn = document.querySelector('.btn-ghost');
+  const orig = btn.textContent;
+  btn.textContent = '저장 중...'; btn.disabled = true;
+
+  try {
+    await cloudSave(snapshot);
+    // 고객 로컬 저장
+    if(cust!=='이름없음'){
+      let cs=[]; try{cs=JSON.parse(localStorage.getItem('hs_c')||'[]');}catch(e){}
+      if(!cs.find(c=>c.name===cust)){cs.unshift({name:cust,phone:document.getElementById('cPhone').value});if(cs.length>20)cs=cs.slice(0,20);localStorage.setItem('hs_c',JSON.stringify(cs));}
+      renderSavedCusts();
+    }
+    alert(`저장됐어요! ☁️\n${cust} | ${total.toLocaleString()}원\nPC·아이폰 모두 히스토리에서 확인 가능해요`);
+  } catch(e) {
+    alert('저장 실패했어요. 인터넷 연결을 확인해 주세요.');
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+function renderSavedCusts() {
+  let cs=[]; try{cs=JSON.parse(localStorage.getItem('hs_c')||'[]');}catch(e){}
+  document.getElementById('savedCusts').innerHTML = cs.slice(0,8).map(c=>
+    `<button class="sc-btn" onclick="loadCust('${c.name}','${c.phone||''}')">${c.name}</button>`
+  ).join('');
+}
+
+function loadCust(n,p) { document.getElementById('cCust').value=n; document.getElementById('cPhone').value=p; }
+
+async function openHistory() {
+  const el = document.getElementById('histList');
+  el.innerHTML = '<p style="text-align:center;color:#ccc;padding:24px;font-size:13px">불러오는 중... ☁️</p>';
+  document.getElementById('histMod').className='modal-bg open';
+
+  try {
+    const qs = await cloudLoad();
+    if(!qs.length){
+      el.innerHTML='<p style="text-align:center;color:#ccc;padding:24px;font-size:13px">저장된 견적이 없어요</p>';
+      return;
+    }
+    el.innerHTML = qs.map((q,i) => `
+      <div class="hist-item">
+        <div class="hi-top" onclick="loadQ(${i}, ${JSON.stringify(qs).replace(/"/g,'&quot;')})">
+          <div class="hi-name">${q.custName}</div>
+          <div class="hi-price">${Number(q.total).toLocaleString()}원</div>
+        </div>
+        <div class="hi-meta">${q.date} · 품목 ${q.cart.length}개${q.custPhone?' · '+q.custPhone:''} · 공장도 ${Number(q.factorySum||0).toLocaleString()}원</div>
+        <div style="text-align:right;margin-top:6px">
+          <button onclick="loadQ(${i}, ${JSON.stringify(qs).replace(/"/g,'&quot;')})" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff;font-family:inherit;margin-right:6px">불러오기</button>
+          <button onclick="deleteQ('${q.id}', this)" style="font-size:11px;padding:4px 10px;border:1px solid #eee;border-radius:6px;cursor:pointer;background:#fff;color:#ccc;font-family:inherit">삭제</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML='<p style="text-align:center;color:#e44;padding:24px;font-size:13px">불러오기 실패. 인터넷 연결을 확인해 주세요.</p>';
+  }
+}
+
+function loadQ(i, qsJson) {
+  const qs = typeof qsJson === 'string' ? JSON.parse(qsJson.replace(/&quot;/g,'"')) : qsJson;
+  const q = qs[i]; if(!q)return;
+  cart = [...q.cart];
+  document.getElementById('cCust').value=q.custName;
+  document.getElementById('cPhone').value=q.custPhone||'';
+  document.getElementById('cAddr').value=q.custAddr||'';
+  document.getElementById('cNote').value=q.custNote||'';
+  document.getElementById('globalMargin').value=q.globalMargin||30;
+  document.getElementById('disc').value=q.discRate||0;
+  document.getElementById('costSigan').value=q.siganUnit||350000;
+  document.getElementById('costSiganQty').value=q.siganQty||0;
+  document.getElementById('costLogistics').value=q.logistics||150000;
+  document.getElementById('costWaste').value=q.waste||80000;
+  document.getElementById('costMisc').value=q.misc||50000;
+  vatOn = q.vatOn;
+  document.getElementById('vatTog').className='tog'+(vatOn?' on':'');
+  if(q.marginMode) setMarginMode(q.marginMode);
+  renderCart(); calc();
+  closeM('histMod');
+}
+
+async function deleteQ(id, btn) {
+  if(!confirm('이 견적을 삭제할까요?')) return;
+  btn.textContent='삭제 중...'; btn.disabled=true;
+  try {
+    await cloudDelete(id);
+    btn.closest('.hist-item').remove();
+  } catch(e) {
+    alert('삭제 실패. 다시 시도해 주세요.');
+    btn.textContent='삭제'; btn.disabled=false;
+  }
+}
+
+function closeM(id) { document.getElementById(id).className='modal-bg'; }
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.className='modal-bg';}));
+
+// ─── START ───────────────────────────────────────────────
+initUI(); renderItems(); calc(); renderSavedCusts();
+</script>
+</body>
+</html>
