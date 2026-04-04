@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>브라운휴먼핏 견적 시스템</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #F7F6F3;
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+  --gray1: #F0EFE9;
+  --gray2: #E5E3DB;
+  --gray3: #999690;
+  --gray4: #666360;
+  --accent: #C17F4A;
+  --accent2: #8B5E35;
+  --blue: #3B6EA5;
+  --green: #4A8B5E;
+  --red: #C0392B;
+  --shadow: 0 2px 12px rgba(0,0,0,.07);
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--black);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--black);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.hdr-logo { font-size: 11px; font-weight: 700; letter-spacing: .15em; color: var(--accent); text-transform: uppercase; }
+.hdr-title { font-size: 14px; font-weight: 500; }
+.hdr-date { margin-left: auto; font-size: 11px; color: #888; }
+
+/* ── TAB NAV (mobile) ── */
+.tab-nav {
+  display: none;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray2);
+}
+.tab-nav button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--gray3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+}
+.tab-nav button.on { color: var(--black); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* ── LAYOUT ── */
+.wrap {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  min-height: calc(100vh - 46px);
+}
+@media(max-width: 860px) {
+  .wrap { grid-template-columns: 1fr; }
+  .tab-nav { display: flex; }
+  .panel-left, .panel-right { display: none; }
+  .panel-left.active, .panel-right.active { display: block; }
+}
+
+.panel-left {
+  background: var(--white);
+  border-right: 1px solid var(--gray2);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px;
+  min-width: 0;
+}
+.panel-right {
+  background: var(--bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+  min-width: 0;
+}
+
+/* ── SECTION TITLE ── */
+.sec {
+  margin-bottom: 18px;
+}
+.sec-hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sec-num {
+  width: 20px; height: 20px;
+  background: var(--black);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sec-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gray4); }
+.divider { height: 1px; background: var(--gray2); margin: 16px 0; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 13px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray3);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── BUTTON GROUP ── */
+.btn-grp { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.btn-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--gray2);
+  font-size: 11px;
+  cursor: pointer;
+  background: var(--white);
+  color: var(--gray4);
+  font-family: inherit;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn-chip:hover { border-color: var(--gray3); color: var(--black); }
+.btn-chip.on { background: var(--black); color: #fff; border-color: var(--black); }
+.btn-chip.on-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── INPUTS ── */
+.inp-row { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.inp-lbl { font-size: 11px; color: var(--gray3); white-space: nowrap; min-width: 72px; }
+.inp {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--gray2);
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--black);
+  transition: border-color .15s;
+}
+.inp:focus { outline: none; border-color: var(--accent); }
+.inp-unit { font-size: 11px; color: var(--gray3); white-space: nowrap; }
+.inp-sm { width: 70px; text-align: right; }
+.inp-sm::-webkit-inner-spin-button, .inp-sm::-webkit-outer-spin-button { -webkit-appearance: none; }
+.inp-sm[type=number] { -moz-appearance: textfield; }
+
+/* ── CATEGORY ITEMS ── */
+.cat-item {
+  background: var(--gray1);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.cat-item-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cat-item-name { font-size: 12px; font-weight: 700; color: var(--black); }
+.cat-item-body { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field-lbl { font-size: 10px; color: var(--gray3); }
+.field-inp {
+  padding: 6px 9px;
+  border: 1px solid var(--gray2);
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--black);
+  text-align: right;
+}
+.field-inp:focus { outline: none; border-color: var(--accent); }
+.field-inp::-webkit-inner-spin-button, .field-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.field-inp[type=number] { -moz-appearance: textfield; }
+.field-sel {
+  padding: 6px 9px;
+  border: 1px solid var(--gray2);
+  border-radius: 7px;
+  font-size: 11px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--black);
+  cursor: pointer;
+}
+.field-sel:focus { outline: none; border-color: var(--accent); }
+
+/* ── MARGIN ROW ── */
+.margin-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFF8F2;
+  border: 1px solid #F0D9C0;
+  border-radius: 7px;
+  padding: 6px 10px;
+  margin-top: 8px;
+}
+.margin-lbl { font-size: 10px; color: var(--accent2); white-space: nowrap; }
+.margin-inp {
+  width: 55px;
+  padding: 4px 7px;
+  border: 1px solid #F0D9C0;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--accent2);
+  text-align: center;
+  font-weight: 600;
+}
+.margin-inp:focus { outline: none; border-color: var(--accent); }
+.margin-inp::-webkit-inner-spin-button, .margin-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.margin-inp[type=number] { -moz-appearance: textfield; }
+.margin-preview { margin-left: auto; font-size: 11px; color: var(--accent); font-weight: 600; }
+
+/* ── ADD BUTTON ── */
+.btn-add {
+  width: 100%;
+  padding: 9px;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  margin-top: 6px;
+}
+.btn-add:hover { background: #333; }
+.btn-add-ghost {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  color: var(--gray3);
+  border: 1px dashed var(--gray2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+  margin-top: 5px;
+}
+.btn-add-ghost:hover { border-color: var(--gray3); color: var(--black); }
+
+/* ── CART ── */
+.cart-area { min-height: 60px; }
+.cart-item {
+  background: var(--white);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 7px;
+  position: relative;
+}
+.ci-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.ci-name { font-size: 12px; font-weight: 600; color: var(--black); }
+.ci-del {
+  width: 18px; height: 18px;
+  border: none; background: transparent;
+  color: var(--gray3); font-size: 16px;
+  cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.ci-del:hover { color: var(--red); }
+.ci-detail { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.ci-tag { font-size: 10px; color: var(--gray3); background: var(--gray1); padding: 2px 7px; border-radius: 10px; }
+.ci-tag.orange { background: #FFF0E0; color: var(--accent); }
+.ci-amt { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--black); }
+.empty-cart {
+  padding: 24px;
+  text-align: center;
+  color: var(--gray3);
+  font-size: 12px;
+  border: 1px dashed var(--gray2);
+  border-radius: var(--radius);
+}
+
+/* ── RIGHT PANEL ── */
+.r-card {
+  background: var(--white);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 13px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  min-width: 0;
+}
+.r-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray3);
+  margin-bottom: 10px;
+}
+.r-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+.r-lbl { color: var(--gray4); }
+.r-val { font-weight: 500; }
+.r-val.orange { color: var(--accent); }
+.r-val.blue { color: var(--blue); }
+.r-val.green { color: var(--green); }
+.r-sep { height: 1px; background: var(--gray2); margin: 8px 0; }
+
+.total-box {
+  background: var(--black);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 15px;
+  margin-bottom: 10px;
+}
+.total-lbl { font-size: 10px; color: #999; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+.total-amt { font-size: 22px; font-weight: 700; }
+.total-sub { font-size: 10px; color: #888; margin-top: 4px; }
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+  margin-bottom: 7px;
+  letter-spacing: .03em;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary {
+  width: 100%;
+  padding: 11px;
+  background: var(--white);
+  color: var(--black);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+  margin-bottom: 7px;
+}
+.btn-secondary:hover { background: var(--gray1); }
+
+/* ── CUST INFO ── */
+.cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+
+/* ── EXTRA COSTS ── */
+.extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.extra-item { display: flex; flex-direction: column; gap: 3px; }
+.extra-lbl { font-size: 10px; color: var(--gray3); }
+.extra-inp {
+  padding: 6px 8px;
+  border: 1px solid var(--gray2);
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--white);
+  color: var(--black);
+  text-align: right;
+}
+.extra-inp:focus { outline: none; border-color: var(--gray3); }
+.extra-inp::-webkit-inner-spin-button, .extra-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.extra-inp[type=number] { -moz-appearance: textfield; }
+
+/* ── MODAL ── */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+@media(min-width:600px){
+  .modal-bg { align-items: center; padding: 16px; }
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 14px 14px 0 0;
+  padding: 22px 22px 30px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 92vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+@media(min-width:600px){
+  .modal { border-radius: 14px; padding: 22px; max-height: 88vh; }
+}
+.modal-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.modal-hd span { font-size: 15px; font-weight: 700; }
+.modal-x {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray3);
+  line-height: 1;
+}
+.modal-x:hover { color: var(--black); }
+
+/* Quote preview */
+.q-logo { text-align: center; padding-bottom: 16px; border-bottom: 2px solid var(--black); margin-bottom: 16px; }
+.q-logo-title { font-size: 20px; font-weight: 700; letter-spacing: .15em; }
+.q-logo-sub { font-size: 10px; color: var(--gray3); letter-spacing: .08em; margin-top: 3px; }
+.q-info { background: var(--gray1); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; line-height: 2; }
+.q-sec-title { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--gray3); text-transform: uppercase; margin-bottom: 7px; }
+.q-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px; }
+.q-table th { padding: 6px 8px; background: var(--gray1); font-weight: 700; font-size: 10px; color: var(--gray3); text-align: left; }
+.q-table td { padding: 7px 8px; border-bottom: 1px solid var(--gray1); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-total { background: var(--gray1); border-radius: 9px; padding: 14px; }
+.q-tot-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: var(--gray4); }
+.q-tot-final { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; padding-top: 10px; border-top: 1px solid var(--gray2); margin-top: 8px; }
+.q-actions { display: flex; gap: 7px; margin-top: 14px; position: sticky; bottom: 0; background: var(--white); padding: 10px 0 4px; z-index: 10; }
+.q-btn { flex: 1; padding: 13px; border-radius: 8px; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; border: none; -webkit-tap-highlight-color: transparent; }
+.q-btn-primary { background: var(--black); color: #fff; }
+.q-btn-secondary { background: var(--gray1); color: var(--black); }
+
+/* history */
+.hist-item {
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.hist-item:hover { border-color: var(--accent); }
+.hi-top { display: flex; justify-content: space-between; align-items: center; }
+.hi-name { font-size: 13px; font-weight: 600; }
+.hi-price { font-size: 13px; font-weight: 700; color: var(--accent); }
+.hi-meta { font-size: 11px; color: var(--gray3); margin-top: 3px; }
+.hi-actions { display: flex; gap: 5px; margin-top: 8px; }
+.hi-btn { font-size: 11px; padding: 4px 10px; border: 1px solid var(--gray2); border-radius: 6px; cursor: pointer; background: var(--white); font-family: inherit; }
+.hi-btn:hover { background: var(--gray1); }
+.hi-btn.del { color: var(--red); border-color: #FADADD; }
+.hi-btn.del:hover { background: #FFF0F0; }
+
+/* Badge */
+.badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: var(--accent); color: #fff; border-radius: 50%; font-size: 10px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">BROWN HUMAN FIT</div>
+  <div class="hdr-title">견적 시스템</div>
+  <div class="hdr-date" id="todayDate"></div>
+</div>
+
+<div class="tab-nav" id="tabNav">
+  <button class="on" onclick="switchTab('left')">📐 품목 입력</button>
+  <button onclick="switchTab('right')">💰 견적 확인</button>
+</div>
+
+<div class="wrap">
+
+<!-- ════ LEFT ════ -->
+<div class="panel-left active" id="panelLeft">
+
+  <!-- 고객정보 -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-num">1</div><div class="sec-title">고객 정보</div></div>
+    <div class="cust-grid">
+      <input class="inp" id="cName" placeholder="고객명"/>
+      <input class="inp" id="cPhone" placeholder="연락처"/>
+    </div>
+    <input class="inp" id="cAddr" placeholder="설치 주소" style="width:100%;margin-bottom:6px"/>
+    <textarea class="inp" id="cNote" placeholder="메모" style="width:100%;height:44px;resize:none"></textarea>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 주방가구 -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-num">2</div><div class="sec-title">주방가구</div></div>
+
+    <!-- 몸통 선택 -->
+    <div class="card">
+      <div class="card-title">몸통 (목대)</div>
+      <div class="btn-grp" id="bodyBrandRow">
+        <button class="btn-chip on" onclick="setBodyBrand('한송',this)">한송</button>
+        <button class="btn-chip" onclick="setBodyBrand('홈그린',this)">홈그린</button>
+      </div>
+    </div>
+
+    <!-- 도어 선택 -->
+    <div class="card">
+      <div class="card-title">도어 마감재</div>
+      <div class="btn-grp" id="doorMatRow">
+        <button class="btn-chip on" onclick="setDoorMat('한송 PET',this)">한송 PET</button>
+        <button class="btn-chip" onclick="setDoorMat('LX 보르떼3 무광',this)">LX 보르떼3 무광</button>
+        <button class="btn-chip" onclick="setDoorMat('LX 보르떼3 유광',this)">LX 보르떼3 유광</button>
+        <button class="btn-chip" onclick="setDoorMat('LX 보르떼7 스페셜',this)">보르떼7 스페셜</button>
+        <button class="btn-chip" onclick="setDoorMat('LX 보르떼7 프리미엄',this)">보르떼7 프리미엄</button>
+        <button class="btn-chip" onclick="setDoorMat('LX 보르떼7 메탈',this)">보르떼7 메탈</button>
+        <button class="btn-chip" onclick="setDoorMat('도장',this)">도장</button>
+      </div>
+    </div>
+
+    <!-- 항목 추가 -->
+    <div id="kitchenItems"></div>
+    <button class="btn-add-ghost" onclick="addKitchenItem()">+ 주방가구 항목 추가</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 일반가구 -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-num">3</div><div class="sec-title">일반가구</div></div>
+    <div id="generalItems"></div>
+    <button class="btn-add-ghost" onclick="addGeneralItem()">+ 일반가구 항목 추가</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 기타 항목 (직접입력) -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-num">4</div><div class="sec-title">기타 / 직접 입력</div></div>
+    <div id="customItems"></div>
+    <button class="btn-add-ghost" onclick="addCustomItem()">+ 직접 입력 항목 추가</button>
+  </div>
+
+</div><!-- /panel-left -->
+
+<!-- ════ RIGHT ════ -->
+<div class="panel-right active" id="panelRight">
+
+  <!-- 추가비용 -->
+  <div class="r-card">
+    <div class="r-card-title">추가 비용</div>
+    <div class="extra-grid">
+      <div class="extra-item">
+        <div class="extra-lbl">시공 단가 (품당)</div>
+        <input class="extra-inp" type="number" id="eSigan" placeholder="350,000" oninput="calc()"/>
+      </div>
+      <div class="extra-item">
+        <div class="extra-lbl">시공 품수</div>
+        <input class="extra-inp" type="number" id="eSiganQty" placeholder="0" oninput="calc()"/>
+      </div>
+      <div class="extra-item">
+        <div class="extra-lbl">물류비</div>
+        <input class="extra-inp" type="number" id="eLogistics" placeholder="150,000" oninput="calc()"/>
+      </div>
+      <div class="extra-item">
+        <div class="extra-lbl">폐기물 처리비</div>
+        <input class="extra-inp" type="number" id="eWaste" placeholder="80,000" oninput="calc()"/>
+      </div>
+      <div class="extra-item" style="grid-column:span 2">
+        <div class="extra-lbl">공과잡비</div>
+        <input class="extra-inp" type="number" id="eMisc" placeholder="50,000" oninput="calc()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- 할인 / 부가세 -->
+  <div class="r-card">
+    <div class="r-card-title">할인 / 부가세</div>
+    <div class="r-row">
+      <span class="r-lbl">할인율</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input class="extra-inp" type="number" id="eDisc" value="0" min="0" max="100" style="width:60px;text-align:center" oninput="calc()"/>
+        <span class="r-lbl">%</span>
+        <span class="r-val" id="discAmt" style="color:var(--red);min-width:70px;text-align:right">- 0원</span>
+      </div>
+    </div>
+    <div class="r-row">
+      <span class="r-lbl">부가세 (10%)</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-chip on" id="vatBtn" onclick="toggleVat()" style="padding:4px 12px">포함</button>
+        <span class="r-val" id="vatAmt">+ 0원</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 금액 요약 -->
+  <div class="r-card">
+    <div class="r-card-title">금액 요약</div>
+    <div class="r-row"><span class="r-lbl">몸통 공급가</span><span class="r-val" id="sumBody">0원</span></div>
+    <div class="r-row"><span class="r-lbl">도어 공급가</span><span class="r-val" id="sumDoor">0원</span></div>
+    <div class="r-row"><span class="r-lbl">기타 공급가</span><span class="r-val" id="sumEtc">0원</span></div>
+    <div class="r-sep"></div>
+    <div class="r-row"><span class="r-lbl">공급가 합계</span><span class="r-val" id="sumSupply">0원</span></div>
+    <div class="r-row"><span class="r-lbl">마진 합계</span><span class="r-val orange" id="sumMargin">+ 0원</span></div>
+    <div class="r-row"><span class="r-lbl" style="font-weight:600">판매가 소계</span><span class="r-val" style="font-weight:600" id="sumSell">0원</span></div>
+    <div class="r-sep"></div>
+    <div class="r-row"><span class="r-lbl">시공비 (<span id="siganQtyLbl">0</span>품)</span><span class="r-val blue" id="sumSigan">+ 0원</span></div>
+    <div class="r-row"><span class="r-lbl">물류비</span><span class="r-val blue" id="sumLogistics">+ 0원</span></div>
+    <div class="r-row"><span class="r-lbl">폐기물/공과잡비</span><span class="r-val blue" id="sumExtra">+ 0원</span></div>
+  </div>
+
+  <!-- 최종 금액 -->
+  <div class="total-box">
+    <div class="total-lbl">최종 견적금액</div>
+    <div class="total-amt" id="totalAmt">0원</div>
+    <div class="total-sub" id="totalSub"></div>
+  </div>
+
+  <button class="btn-primary" onclick="previewQuote()">📄 견적서 미리보기</button>
+  <button class="btn-secondary" onclick="saveQuote()">☁️ 저장하기</button>
+  <button class="btn-secondary" onclick="openHistory()">📋 히스토리</button>
+
+</div><!-- /panel-right -->
+</div><!-- /wrap -->
+
+<!-- ── MODALS ── -->
+<div class="modal-bg" id="previewModal">
+  <div class="modal">
+    <div class="modal-hd"><span>견적서 미리보기</span><button class="modal-x" onclick="closeModal('previewModal')">×</button></div>
+    <div id="previewContent"></div>
+    <div class="q-actions">
+      <button class="q-btn q-btn-secondary" onclick="copyKakao()">📋 카카오 복사</button>
+      <button class="q-btn q-btn-primary" onclick="printPDF()">🖨️ PDF 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="histModal">
+  <div class="modal">
+    <div class="modal-hd"><span>견적 히스토리</span><button class="modal-x" onclick="closeModal('histModal')">×</button></div>
+    <div id="histContent"></div>
+  </div>
+</div>
+
+<script>
+// ── 오늘 날짜
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+
+// ── 단가 DB ──────────────────────────────────────
+const PRICES = {
+  body: {
+    '한송': { '상부장': 18000, '하부장': 23000, '키큰장': 55000 },
+    '홈그린': { '상부장': 24000, '하부장': 27000, '키큰장': 90000 }
+  },
+  door_kitchen: {
+    '한송 PET': 8000, 'LX 보르떼3 무광': 9000, 'LX 보르떼3 유광': 10000,
+    'LX 보르떼7 스페셜': 10000, 'LX 보르떼7 프리미엄': 11000,
+    'LX 보르떼7 메탈': 13000, '도장': 15000
+  },
+  door_builtin: {
+    '한솔 PET': 145000, 'LG PET': 135000, 'SK PET': 125000,
+    'FUREN EIR': 62000, 'LX 보르떼3 무광': 24000, 'LX 보르떼7 스페셜': 29000,
+    'LX 보르떼7 프리미엄': 33000, 'LX 보르떼7 메탈': 38000
+  },
+  general: {
+    '붙박이장': { body: 90000, label: '자당' },
+    '신발장':   { body: 80000, label: '자당' },
+    '시스템옷장': { body: 65000, label: '자당' },
+    '유리장식장': { body: 80000, label: '자당' },
+  }
+};
+
+// ── 상태 ──────────────────────────────────────────
+let bodyBrand = '한송';
+let doorMat = '한송 PET';
+let vatOn = true;
+let kitchenItems = [];  // {id, type, ja, bodyPrice, doorPrice, margin}
+let generalItems = [];  // {id, type, doorMat, ja, bodyPrice, doorPrice, margin}
+let customItems = [];   // {id, name, supply, margin}
+let idCnt = 0;
+
+// ── HELPER ────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString() + '원';
+
+function setBodyBrand(brand, el) {
+  bodyBrand = brand;
+  document.querySelectorAll('#bodyBrandRow .btn-chip').forEach(b => b.className='btn-chip');
+  el.className = 'btn-chip on';
+  // 기존 주방 항목 단가 업데이트
+  kitchenItems.forEach(item => {
+    const bKey = item.type === '키큰장' ? '키큰장' : item.type;
+    item.bodyPrice = PRICES.body[bodyBrand][bKey] || 0;
+  });
+  renderKitchen(); calc();
+}
+
+function setDoorMat(mat, el) {
+  doorMat = mat;
+  document.querySelectorAll('#doorMatRow .btn-chip').forEach(b => b.className='btn-chip');
+  el.className = 'btn-chip on';
+  // 기존 주방 항목 도어 단가 업데이트
+  kitchenItems.forEach(item => {
+    item.doorPrice = PRICES.door_kitchen[doorMat] || 0;
+    item.doorMat = doorMat;
+  });
+  renderKitchen(); calc();
+}
+
+// ── 주방가구 ──────────────────────────────────────
+const KITCHEN_TYPES = ['상부장','하부장','키큰장'];
+
+function addKitchenItem() {
+  const id = ++idCnt;
+  kitchenItems.push({
+    id, type:'상부장', ja:10,
+    bodyBrand, doorMat,
+    bodyPrice: PRICES.body[bodyBrand]['상부장'],
+    doorPrice: PRICES.door_kitchen[doorMat],
+    margin: 30
+  });
+  renderKitchen(); calc();
+}
+
+function renderKitchen() {
+  const el = $('kitchenItems');
+  if (!kitchenItems.length) { el.innerHTML=''; return; }
+  el.innerHTML = kitchenItems.map((item, i) => {
+    const supply = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(supply * (1 + item.margin/100));
+    return `<div class="cat-item">
+      <div class="cat-item-hd">
+        <span class="cat-item-name">${item.type}</span>
+        <button class="ci-del" onclick="delKitchen(${i})">×</button>
+      </div>
+      <div class="cat-item-body">
+        <div class="field">
+          <div class="field-lbl">종류</div>
+          <select class="field-sel" onchange="updateKitchen(${i},'type',this.value)">
+            ${KITCHEN_TYPES.map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-lbl">치수(mm)</div>
+          <input class="field-inp" type="number" placeholder="예: 3600" onchange="mmToJa(this, ${i}, 'kitchen')" onfocus="this.select()"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">자수</div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input class="field-inp" type="number" value="${item.ja}" placeholder="자" style="flex:1" onchange="updateKitchen(${i},'ja',this.value)" onfocus="this.select()"/>
+            <span style="font-size:11px;color:var(--gray3)">자</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">몸통 단가/자</div>
+          <input class="field-inp" type="number" value="${item.bodyPrice}" onchange="updateKitchen(${i},'bodyPrice',this.value)" onfocus="this.select()"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">도어 단가/자</div>
+          <input class="field-inp" type="number" value="${item.doorPrice}" onchange="updateKitchen(${i},'doorPrice',this.value)" onfocus="this.select()"/>
+        </div>
+      </div>
+      <div class="margin-row">
+        <span class="margin-lbl">마진율</span>
+        <input class="margin-inp" type="number" value="${item.margin}" min="0" max="500" onchange="updateKitchen(${i},'margin',this.value)"/>
+        <span class="margin-lbl">%</span>
+        <span class="margin-preview">→ ${fmt(sell)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateKitchen(i, key, val) {
+  const item = kitchenItems[i];
+  if (key === 'type') {
+    item.type = val;
+    const bKey = val === '키큰장' ? '키큰장' : val;
+    item.bodyPrice = PRICES.body[bodyBrand][bKey] || 0;
+    item.doorPrice = PRICES.door_kitchen[doorMat] || 0;
+  } else if (key === 'ja' || key === 'margin') {
+    item[key] = parseFloat(val) || 0;
+  } else {
+    item[key] = parseInt(val) || 0;
+  }
+  renderKitchen(); calc();
+}
+
+function delKitchen(i) { kitchenItems.splice(i,1); renderKitchen(); calc(); }
+
+// ── 일반가구 ──────────────────────────────────────
+const GENERAL_TYPES = Object.keys(PRICES.general);
+const BUILTIN_DOORS = Object.keys(PRICES.door_builtin);
+
+function addGeneralItem() {
+  const id = ++idCnt;
+  const type = '붙박이장';
+  generalItems.push({
+    id, type, ja: 6,
+    doorMat: '한솔 PET',
+    bodyPrice: PRICES.general[type].body,
+    doorPrice: PRICES.door_builtin['한솔 PET'],
+    margin: 30
+  });
+  renderGeneral(); calc();
+}
+
+function renderGeneral() {
+  const el = $('generalItems');
+  if (!generalItems.length) { el.innerHTML=''; return; }
+  el.innerHTML = generalItems.map((item, i) => {
+    const supply = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(supply * (1 + item.margin/100));
+    return `<div class="cat-item">
+      <div class="cat-item-hd">
+        <span class="cat-item-name">${item.type}</span>
+        <button class="ci-del" onclick="delGeneral(${i})">×</button>
+      </div>
+      <div class="cat-item-body">
+        <div class="field">
+          <div class="field-lbl">종류</div>
+          <select class="field-sel" onchange="updateGeneral(${i},'type',this.value)">
+            ${GENERAL_TYPES.map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-lbl">치수(mm)</div>
+          <input class="field-inp" type="number" placeholder="예: 3600" onchange="mmToJa(this, ${i}, 'general')" onfocus="this.select()"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">자수</div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input class="field-inp" type="number" value="${item.ja}" placeholder="자" style="flex:1" onchange="updateGeneral(${i},'ja',this.value)" onfocus="this.select()"/>
+            <span style="font-size:11px;color:var(--gray3)">자</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">몸통 단가/자</div>
+          <input class="field-inp" type="number" value="${item.bodyPrice}" onchange="updateGeneral(${i},'bodyPrice',this.value)" onfocus="this.select()"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">도어 종류</div>
+          <select class="field-sel" onchange="updateGeneral(${i},'doorMat',this.value)">
+            ${BUILTIN_DOORS.map(d=>`<option value="${d}" ${item.doorMat===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <div class="field-lbl">도어 단가/자</div>
+          <input class="field-inp" type="number" value="${item.doorPrice}" onchange="updateGeneral(${i},'doorPrice',this.value)" onfocus="this.select()"/>
+        </div>
+      </div>
+      <div class="margin-row">
+        <span class="margin-lbl">마진율</span>
+        <input class="margin-inp" type="number" value="${item.margin}" min="0" max="500" onchange="updateGeneral(${i},'margin',this.value)"/>
+        <span class="margin-lbl">%</span>
+        <span class="margin-preview">→ ${fmt(sell)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateGeneral(i, key, val) {
+  const item = generalItems[i];
+  if (key === 'type') {
+    item.type = val;
+    item.bodyPrice = PRICES.general[val]?.body || 0;
+  } else if (key === 'doorMat') {
+    item.doorMat = val;
+    item.doorPrice = PRICES.door_builtin[val] || 0;
+  } else if (key === 'ja' || key === 'margin') {
+    item[key] = parseFloat(val) || 0;
+  } else {
+    item[key] = parseInt(val) || 0;
+  }
+  renderGeneral(); calc();
+}
+
+function delGeneral(i) { generalItems.splice(i,1); renderGeneral(); calc(); }
+
+// ── 직접 입력 ─────────────────────────────────────
+function addCustomItem() {
+  const id = ++idCnt;
+  customItems.push({ id, name: '', supply: 0, qty: 1, margin: 30 });
+  renderCustom(); calc();
+}
+
+function renderCustom() {
+  const el = $('customItems');
+  if (!customItems.length) { el.innerHTML=''; return; }
+  el.innerHTML = customItems.map((item, i) => {
+    const sell = Math.round(item.supply * item.qty * (1 + item.margin/100));
+    return `<div class="cat-item">
+      <div class="cat-item-hd">
+        <span class="cat-item-name">직접 입력</span>
+        <button class="ci-del" onclick="delCustom(${i})">×</button>
+      </div>
+      <div class="cat-item-body">
+        <div class="field" style="grid-column:span 2">
+          <div class="field-lbl">품목명</div>
+          <input class="field-inp" type="text" value="${item.name}" placeholder="품목명 입력" style="text-align:left" onchange="updateCustom(${i},'name',this.value)"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">공급 단가</div>
+          <input class="field-inp" type="number" value="${item.supply}" onchange="updateCustom(${i},'supply',this.value)" onfocus="this.select()"/>
+        </div>
+        <div class="field">
+          <div class="field-lbl">수량</div>
+          <input class="field-inp" type="number" value="${item.qty}" min="1" onchange="updateCustom(${i},'qty',this.value)" onfocus="this.select()"/>
+        </div>
+      </div>
+      <div class="margin-row">
+        <span class="margin-lbl">마진율</span>
+        <input class="margin-inp" type="number" value="${item.margin}" min="0" max="500" onchange="updateCustom(${i},'margin',this.value)"/>
+        <span class="margin-lbl">%</span>
+        <span class="margin-preview">→ ${fmt(sell)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateCustom(i, key, val) {
+  if (key === 'name') customItems[i][key] = val;
+  else if (key === 'margin' || key === 'qty') customItems[i][key] = parseFloat(val)||0;
+  else customItems[i][key] = parseInt(val)||0;
+  renderCustom(); calc();
+}
+
+function delCustom(i) { customItems.splice(i,1); renderCustom(); calc(); }
+
+
+// ── MM → 자 변환 ──────────────────────────────────
+function mmToJa(mmInput, i, type) {
+  const mm = parseFloat(mmInput.value) || 0;
+  if (mm <= 0) return;
+  const ja = mm / 303;  // 1자 = 303mm
+  const jaRounded = Math.ceil(ja);  // 올림 (예: 2900mm → 10자)
+  // 옆의 자수 input 업데이트
+  const jaInput = mmInput.parentElement.querySelector('input:nth-child(3)');
+  if (jaInput) {
+    jaInput.value = jaRounded;
+    if (type === 'kitchen') updateKitchen(i, 'ja', jaRounded);
+    else if (type === 'general') updateGeneral(i, 'ja', jaRounded);
+  }
+}
+
+// ── CALC ──────────────────────────────────────────
+function calc() {
+  let bodySupply = 0, doorSupply = 0, etcSupply = 0;
+  let sellSum = 0;
+
+  kitchenItems.forEach(item => {
+    const bSup = item.bodyPrice * item.ja;
+    const dSup = item.doorPrice * item.ja;
+    bodySupply += bSup;
+    doorSupply += dSup;
+    sellSum += Math.round((bSup + dSup) * (1 + item.margin/100));
+  });
+
+  generalItems.forEach(item => {
+    const bSup = item.bodyPrice * item.ja;
+    const dSup = item.doorPrice * item.ja;
+    bodySupply += bSup;
+    doorSupply += dSup;
+    sellSum += Math.round((bSup + dSup) * (1 + item.margin/100));
+  });
+
+  customItems.forEach(item => {
+    const sup = item.supply * item.qty;
+    etcSupply += sup;
+    sellSum += Math.round(sup * (1 + item.margin/100));
+  });
+
+  const totalSupply = bodySupply + doorSupply + etcSupply;
+  const marginSum = sellSum - totalSupply;
+
+  const siganUnit = parseInt($('eSigan').value)||0;
+  const siganQty = parseInt($('eSiganQty').value)||0;
+  const logistics = parseInt($('eLogistics').value)||0;
+  const waste = parseInt($('eWaste').value)||0;
+  const misc = parseInt($('eMisc').value)||0;
+  const sigan = siganUnit * siganQty;
+  const extraSum = waste + misc;
+
+  const disc = parseInt($('eDisc').value)||0;
+  const discAmt = Math.round(sellSum * disc / 100);
+  const afterDisc = sellSum - discAmt + sigan + logistics + extraSum;
+  const vat = vatOn ? Math.round(afterDisc * 0.1) : 0;
+  const total = afterDisc + vat;
+
+  $('sumBody').textContent = fmt(bodySupply);
+  $('sumDoor').textContent = fmt(doorSupply);
+  $('sumEtc').textContent = fmt(etcSupply);
+  $('sumSupply').textContent = fmt(totalSupply);
+  $('sumMargin').textContent = '+ ' + fmt(marginSum);
+  $('sumSell').textContent = fmt(sellSum);
+  $('siganQtyLbl').textContent = siganQty;
+  $('sumSigan').textContent = '+ ' + fmt(sigan);
+  $('sumLogistics').textContent = '+ ' + fmt(logistics);
+  $('sumExtra').textContent = '+ ' + fmt(extraSum);
+  $('discAmt').textContent = '- ' + fmt(discAmt);
+  $('vatAmt').textContent = '+ ' + fmt(vat);
+  $('totalAmt').textContent = total.toLocaleString() + '원';
+  $('totalSub').textContent = vatOn ? '부가세 포함' : '부가세 미포함';
+
+  return { bodySupply, doorSupply, etcSupply, totalSupply, marginSum, sellSum, sigan, siganQty, logistics, extraSum, discAmt, vat, total, disc };
+}
+
+function toggleVat() {
+  vatOn = !vatOn;
+  $('vatBtn').className = 'btn-chip' + (vatOn ? ' on' : '');
+  $('vatBtn').textContent = vatOn ? '포함' : '미포함';
+  calc();
+}
+
+// ── QUOTE PREVIEW ─────────────────────────────────
+function previewQuote() {
+  const r = calc();
+  const cust = $('cName').value || '고객';
+  const phone = $('cPhone').value;
+  const addr = $('cAddr').value;
+  const note = $('cNote').value;
+  const date = new Date().toLocaleDateString('ko-KR');
+  const qno = 'Q' + Date.now().toString().slice(-6);
+
+  let rows = '';
+  kitchenItems.forEach(item => {
+    const sup = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(sup * (1 + item.margin/100));
+    rows += `<tr>
+      <td>${item.type}</td>
+      <td style="color:var(--gray3);font-size:10px">${item.bodyBrand} + ${item.doorMat}</td>
+      <td style="text-align:right">${item.ja}자</td>
+      <td style="text-align:right;font-weight:600">${fmt(sell)}</td>
+    </tr>`;
+  });
+  generalItems.forEach(item => {
+    const sup = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(sup * (1 + item.margin/100));
+    rows += `<tr>
+      <td>${item.type}</td>
+      <td style="color:var(--gray3);font-size:10px">${item.doorMat}</td>
+      <td style="text-align:right">${item.ja}자</td>
+      <td style="text-align:right;font-weight:600">${fmt(sell)}</td>
+    </tr>`;
+  });
+  customItems.forEach(item => {
+    const sell = Math.round(item.supply * item.qty * (1 + item.margin/100));
+    rows += `<tr>
+      <td>${item.name||'기타'}</td>
+      <td style="color:var(--gray3);font-size:10px">직접입력</td>
+      <td style="text-align:right">${item.qty}개</td>
+      <td style="text-align:right;font-weight:600">${fmt(sell)}</td>
+    </tr>`;
+  });
+
+  $('previewContent').innerHTML = `
+    <div class="q-logo">
+      <div class="q-logo-title">견 &nbsp; 적 &nbsp; 서</div>
+      <div class="q-logo-sub">${qno} · ${date} · BROWN HUMAN FIT</div>
+    </div>
+    ${cust||phone||addr ? `<div class="q-info">
+      <b>고객명:</b> ${cust}${phone?' &nbsp;|&nbsp; <b>연락처:</b> '+phone:''}<br>
+      ${addr?'<b>주소:</b> '+addr+'<br>':''}${note?'<b>메모:</b> '+note:''}
+    </div>`:''}
+    <div class="q-sec-title">견적 내역</div>
+    <table class="q-table">
+      <tr><th>항목</th><th>사양</th><th style="text-align:right">수량</th><th style="text-align:right">금액</th></tr>
+      ${rows}
+    </table>
+    <div class="q-total">
+      <div class="q-tot-row"><span>판매가 소계</span><span>${fmt(r.sellSum)}</span></div>
+      ${r.siganQty>0?`<div class="q-tot-row"><span>시공비 (${r.siganQty}품)</span><span>+ ${fmt(r.sigan)}</span></div>`:''}
+      ${r.logistics>0?`<div class="q-tot-row"><span>물류비</span><span>+ ${fmt(r.logistics)}</span></div>`:''}
+      ${r.extraSum>0?`<div class="q-tot-row"><span>폐기물/공과잡비</span><span>+ ${fmt(r.extraSum)}</span></div>`:''}
+      ${r.disc>0?`<div class="q-tot-row" style="color:var(--red)"><span>할인 (${r.disc}%)</span><span>- ${fmt(r.discAmt)}</span></div>`:''}
+      ${vatOn?`<div class="q-tot-row"><span>부가세 (10%)</span><span>+ ${fmt(r.vat)}</span></div>`:''}
+      <div class="q-tot-final"><span>최종 견적금액</span><span>${r.total.toLocaleString()}원</span></div>
+    </div>`;
+
+  $('previewModal').className = 'modal-bg open';
+}
+
+function copyKakao() {
+  const r = calc();
+  const cust = $('cName').value || '고객';
+  const phone = $('cPhone').value;
+  let t = `📋 브라운휴먼핏 견적서\n${new Date().toLocaleDateString('ko-KR')}\n${'─'.repeat(24)}\n`;
+  t += `👤 ${cust}${phone?' | '+phone:''}\n${'─'.repeat(24)}\n`;
+  kitchenItems.forEach(item => {
+    const sup = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(sup * (1 + item.margin/100));
+    t += `• ${item.type} ${item.ja}자 [${item.bodyBrand}+${item.doorMat}]\n  → ${fmt(sell)}\n`;
+  });
+  generalItems.forEach(item => {
+    const sup = (item.bodyPrice + item.doorPrice) * item.ja;
+    const sell = Math.round(sup * (1 + item.margin/100));
+    t += `• ${item.type} ${item.ja}자 [${item.doorMat}]\n  → ${fmt(sell)}\n`;
+  });
+  customItems.forEach(item => {
+    const sell = Math.round(item.supply * item.qty * (1 + item.margin/100));
+    t += `• ${item.name||'기타'} × ${item.qty}\n  → ${fmt(sell)}\n`;
+  });
+  t += `${'─'.repeat(24)}\n💰 최종 견적금액  ${r.total.toLocaleString()}원`;
+  navigator.clipboard.writeText(t)
+    .then(()=>alert('복사됐어요! 카카오톡에 붙여넣기 하세요 😊'))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('복사됐어요!');});
+}
+
+function printPDF() { window.print(); }
+
+// ── SAVE / HISTORY ────────────────────────────────
+const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbyAp7DfYYulaicFCr7TU0GdqOVkQEwsDfgdo80vdcpnz4WK3gIRPlPtkD3Vyky2qhw1CQ/exec';
+
+async function saveQuote() {
+  const r = calc();
+  const snap = {
+    action: 'save',
+    id: Date.now(),
+    date: new Date().toLocaleDateString('ko-KR'),
+    custName: $('cName').value||'이름없음',
+    custPhone: $('cPhone').value,
+    custAddr: $('cAddr').value,
+    custNote: $('cNote').value,
+    kitchenItems: JSON.stringify(kitchenItems),
+    generalItems: JSON.stringify(generalItems),
+    customItems: JSON.stringify(customItems),
+    bodyBrand, doorMat,
+    total: r.total, sellSum: r.sellSum, totalSupply: r.totalSupply,
+    siganUnit: $('eSigan').value, siganQty: $('eSiganQty').value,
+    logistics: $('eLogistics').value, waste: $('eWaste').value,
+    misc: $('eMisc').value, disc: $('eDisc').value, vatOn
+  };
+  const btn = document.querySelector('.btn-secondary');
+  btn.textContent = '저장 중...'; btn.disabled = true;
+  try {
+    await fetch(CLOUD_URL, { method:'POST', body: JSON.stringify(snap) });
+    alert(`저장됐어요! ☁️\n${snap.custName} | ${r.total.toLocaleString()}원`);
+  } catch(e) {
+    // localStorage fallback
+    let qs=[]; try{qs=JSON.parse(localStorage.getItem('bhf_q')||'[]');}catch(e){}
+    qs.unshift(snap); if(qs.length>50)qs=qs.slice(0,50);
+    localStorage.setItem('bhf_q', JSON.stringify(qs));
+    alert(`로컬 저장됐어요!\n${snap.custName} | ${r.total.toLocaleString()}원`);
+  } finally {
+    btn.textContent = '☁️ 저장하기'; btn.disabled = false;
+  }
+}
+
+async function openHistory() {
+  const el = $('histContent');
+  el.innerHTML = '<p style="text-align:center;color:var(--gray3);padding:20px">불러오는 중... ☁️</p>';
+  $('histModal').className = 'modal-bg open';
+  try {
+    const res = await fetch(CLOUD_URL + '?action=load');
+    const qs = await res.json();
+    renderHistory(qs);
+  } catch(e) {
+    let qs=[]; try{qs=JSON.parse(localStorage.getItem('bhf_q')||'[]');}catch(e){}
+    renderHistory(qs);
+  }
+}
+
+function renderHistory(qs) {
+  const el = $('histContent');
+  if (!qs.length) { el.innerHTML='<p style="text-align:center;color:var(--gray3);padding:24px">저장된 견적이 없어요</p>'; return; }
+  el.innerHTML = qs.map((q,i) => `
+    <div class="hist-item">
+      <div class="hi-top">
+        <div class="hi-name">${q.custName}</div>
+        <div class="hi-price">${Number(q.total).toLocaleString()}원</div>
+      </div>
+      <div class="hi-meta">${q.date}${q.custPhone?' · '+q.custPhone:''}</div>
+      <div class="hi-actions">
+        <button class="hi-btn" onclick="loadQ(${i},${JSON.stringify(qs).replace(/"/g,'&quot;')})">불러오기</button>
+        <button class="hi-btn del" onclick="deleteQ('${q.id}',this)">삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+function loadQ(i, qsJson) {
+  const qs = typeof qsJson === 'string' ? JSON.parse(qsJson.replace(/&quot;/g,'"')) : qsJson;
+  const q = qs[i]; if(!q) return;
+  $('cName').value = q.custName||'';
+  $('cPhone').value = q.custPhone||'';
+  $('cAddr').value = q.custAddr||'';
+  $('cNote').value = q.custNote||'';
+  $('eSigan').value = q.siganUnit||350000;
+  $('eSiganQty').value = q.siganQty||0;
+  $('eLogistics').value = q.logistics||150000;
+  $('eWaste').value = q.waste||80000;
+  $('eMisc').value = q.misc||50000;
+  $('eDisc').value = q.disc||0;
+  vatOn = q.vatOn;
+  $('vatBtn').className = 'btn-chip' + (vatOn?' on':'');
+  $('vatBtn').textContent = vatOn ? '포함' : '미포함';
+  try { kitchenItems = JSON.parse(q.kitchenItems||'[]'); } catch(e) { kitchenItems=[]; }
+  try { generalItems = JSON.parse(q.generalItems||'[]'); } catch(e) { generalItems=[]; }
+  try { customItems = JSON.parse(q.customItems||'[]'); } catch(e) { customItems=[]; }
+  bodyBrand = q.bodyBrand||'한송';
+  doorMat = q.doorMat||'한송 PET';
+  renderKitchen(); renderGeneral(); renderCustom(); calc();
+  closeModal('histModal');
+}
+
+async function deleteQ(id, btn) {
+  if(!confirm('삭제할까요?')) return;
+  btn.textContent='삭제 중...'; btn.disabled=true;
+  try {
+    await fetch(CLOUD_URL, {method:'POST', body:JSON.stringify({action:'delete',id})});
+    btn.closest('.hist-item').remove();
+  } catch(e) { btn.textContent='삭제'; btn.disabled=false; }
+}
+
+function closeModal(id) { $(id).className='modal-bg'; }
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.className='modal-bg';}));
+
+function switchTab(tab) {
+  const l=$('panelLeft'), r=$('panelRight');
+  const btns=document.querySelectorAll('.tab-nav button');
+  if(tab==='left'){l.classList.add('active');r.classList.remove('active');btns[0].className='on';btns[1].className='';}
+  else{r.classList.add('active');l.classList.remove('active');btns[1].className='on';btns[0].className='';}
+}
+
+// 초기 계산
+calc();
+</script>
+</body>
+</html>
